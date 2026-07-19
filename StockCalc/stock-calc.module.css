@@ -1,0 +1,136 @@
+.container {
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldLabel {
+  font-size: 10px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 2px solid #e2e8f0;
+  padding: 2px 6px;
+  font-size: 12px;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #0f172a;
+}
+
+.unit {
+  font-size: 10px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
+}
+
+.tile {
+  background: #f8fafc;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tileLabel {
+  font-size: 10px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tileValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.tileUnit {
+  font-size: 10px;
+  font-weight: 400;
+  color: #64748b;
+  margin-left: 2px;
+}
+
+.pos {
+  color: #15803d;
+}
+
+.neg {
+  color: #b91c1c;
+}
+
+.tableWrap {
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  color: #0f172a;
+}
+
+.table th,
+.table td {
+  padding: 2px 6px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table th {
+  border-bottom: 2px solid #e2e8f0;
+  font-weight: 600;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+}

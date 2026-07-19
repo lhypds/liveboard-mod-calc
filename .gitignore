@@ -1,0 +1,4 @@
+.DS_Store
+.claude/
+modules.config.json
+**/last_updated.txt

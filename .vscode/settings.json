@@ -1,0 +1,6 @@
+{
+    "js/ts.validate.enabled": false,
+    "[markdown]": {
+        "editor.formatOnSave": false
+    }
+}

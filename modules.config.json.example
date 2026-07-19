@@ -1,0 +1,10 @@
+{
+  "RealEstateCalc": {
+    "enabled": true,
+    "allowMultipleInstances": true
+  },
+  "StockCalc": {
+    "enabled": true,
+    "allowMultipleInstances": true
+  }
+}
