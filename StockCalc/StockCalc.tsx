@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { calcStock, type StockInputs } from "./calc";
 import { config as defaultConfig } from "./config";
-import styles from "./stock-calc.module.css";
+import styles from "./calc.module.css";
 
 type Lang = "en" | "ja" | "zh";
 type I18n = Record<Lang, string>;
@@ -12,9 +12,21 @@ const DEFAULTS = defaultConfig.comp as StockInputs;
 type NumberKey = Exclude<keyof StockInputs, "account">;
 
 const FIELDS: Array<{ key: NumberKey; label: I18n; unit: I18n }> = [
-  { key: "initial", label: { en: "Initial amount", ja: "初期投資額", zh: "初始投资" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "monthly", label: { en: "Monthly amount", ja: "毎月積立額", zh: "每月定投" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "annualReturn", label: { en: "Expected return", ja: "期待利回り", zh: "预期收益率" }, unit: { en: "%/yr", ja: "%/年", zh: "%/年" } },
+  {
+    key: "initial",
+    label: { en: "Initial amount", ja: "初期投資額", zh: "初始投资" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "monthly",
+    label: { en: "Monthly amount", ja: "毎月積立額", zh: "每月定投" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "annualReturn",
+    label: { en: "Expected return", ja: "期待利回り", zh: "预期收益率" },
+    unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
+  },
   { key: "annualFee", label: { en: "Fund fee", ja: "信託報酬", zh: "管理费率" }, unit: { en: "%/yr", ja: "%/年", zh: "%/年" } },
   { key: "years", label: { en: "Years", ja: "運用年数", zh: "投资年数" }, unit: { en: "yr", ja: "年", zh: "年" } },
 ];
@@ -125,7 +137,11 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
     { label: t.finalValue, value: fmt(result.final.value) },
     { label: t.gain, value: fmt(result.final.gain), tone: result.final.gain >= 0 ? "pos" : "neg" },
     { label: t.tax, value: fmt(result.tax) },
-    { label: t.afterTax, value: fmt(result.final.afterTax), tone: result.final.afterTax >= result.final.principal ? "pos" : "neg" },
+    {
+      label: t.afterTax,
+      value: fmt(result.final.afterTax),
+      tone: result.final.afterTax >= result.final.principal ? "pos" : "neg",
+    },
   ];
 
   return (

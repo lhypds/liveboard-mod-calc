@@ -1,4 +1,8 @@
 {
+  "CurrencyCalc": {
+    "enabled": true,
+    "allowMultipleInstances": true
+  },
   "RealEstateCalc": {
     "enabled": true,
     "allowMultipleInstances": true

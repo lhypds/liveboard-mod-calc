@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { calcRealEstate, type RealEstateInputs } from "./calc";
 import { config as defaultConfig } from "./config";
-import styles from "./real-estate-calc.module.css";
+import styles from "./calc.module.css";
 
 type Lang = "en" | "ja" | "zh";
 type I18n = Record<Lang, string>;
@@ -10,17 +10,53 @@ type I18n = Record<Lang, string>;
 const DEFAULTS = defaultConfig.comp as RealEstateInputs;
 
 const FIELDS: Array<{ key: keyof RealEstateInputs; label: I18n; unit: I18n }> = [
-  { key: "price", label: { en: "Property price", ja: "物件価格", zh: "房产价格" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "loanAmount", label: { en: "Loan amount", ja: "借入額", zh: "贷款金额" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
+  {
+    key: "price",
+    label: { en: "Property price", ja: "物件価格", zh: "房产价格" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "loanAmount",
+    label: { en: "Loan amount", ja: "借入額", zh: "贷款金额" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
   { key: "interestRate", label: { en: "Interest rate", ja: "金利", zh: "利率" }, unit: { en: "%/yr", ja: "%/年", zh: "%/年" } },
   { key: "loanYears", label: { en: "Loan term", ja: "返済期間", zh: "还款年限" }, unit: { en: "yr", ja: "年", zh: "年" } },
-  { key: "brokerFee", label: { en: "Broker fee", ja: "仲介手数料", zh: "中介费" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "registrationFee", label: { en: "Registration fee", ja: "登記費用", zh: "登记费用" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "acquisitionTax", label: { en: "Acquisition tax", ja: "不動産取得税", zh: "不动产取得税" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "otherFees", label: { en: "Other fees", ja: "その他諸費用", zh: "其他费用" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "propertyTaxYearly", label: { en: "Property tax / yr", ja: "固定資産税等（年）", zh: "固定资产税（年）" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "maintenanceYearly", label: { en: "Maintenance / yr", ja: "管理・修繕（年）", zh: "管理・修缮（年）" }, unit: { en: "man-yen", ja: "万円", zh: "万円" } },
-  { key: "appreciationRate", label: { en: "Value change", ja: "価格変動率", zh: "价格变动率" }, unit: { en: "%/yr", ja: "%/年", zh: "%/年" } },
+  {
+    key: "brokerFee",
+    label: { en: "Broker fee", ja: "仲介手数料", zh: "中介费" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "registrationFee",
+    label: { en: "Registration fee", ja: "登記費用", zh: "登记费用" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "acquisitionTax",
+    label: { en: "Acquisition tax", ja: "不動産取得税", zh: "不动产取得税" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "otherFees",
+    label: { en: "Other fees", ja: "その他諸費用", zh: "其他费用" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "propertyTaxYearly",
+    label: { en: "Property tax / yr", ja: "固定資産税等（年）", zh: "固定资产税（年）" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "maintenanceYearly",
+    label: { en: "Maintenance / yr", ja: "管理・修繕（年）", zh: "管理・修缮（年）" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+  },
+  {
+    key: "appreciationRate",
+    label: { en: "Value change", ja: "価格変動率", zh: "价格变动率" },
+    unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
+  },
   { key: "years", label: { en: "Holding years", ja: "保有年数", zh: "持有年数" }, unit: { en: "yr", ja: "年", zh: "年" } },
 ];
 

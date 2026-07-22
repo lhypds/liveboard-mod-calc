@@ -13,6 +13,11 @@ Input property price, loan and fees, estimate the net value after X years.
 Stock investment calculator.  
 Input initial/monthly investment, estimate the remaining value after tax (NISA / taxable 20.315%).
 
+`CurrencyCalc`  
+Currency exchange calculator.  
+Convert an amount across multiple currencies at once. Defaults to JPY / USD / CNY / AUD, more can be added.  
+Rates come from [Frankfurter](https://frankfurter.dev) (ECB reference rates), no API key required.
+
 
 Setup
 -----
