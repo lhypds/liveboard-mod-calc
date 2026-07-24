@@ -25,6 +25,12 @@ const FIELDS: Array<{ key: NumberKey; label: I18n; unit: I18n; step: number }> =
     step: 1,
   },
   {
+    key: "contribYears",
+    label: { en: "Contribution years", ja: "積立年数", zh: "定投年数" },
+    unit: { en: "yr", ja: "年", zh: "年" },
+    step: 1,
+  },
+  {
     key: "annualReturn",
     label: { en: "Expected return", ja: "期待利回り", zh: "预期收益率" },
     unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
@@ -38,7 +44,7 @@ const FIELDS: Array<{ key: NumberKey; label: I18n; unit: I18n; step: number }> =
   },
   {
     key: "years",
-    label: { en: "Years", ja: "運用年数", zh: "投资年数" },
+    label: { en: "Total years", ja: "総運用年数", zh: "总运用年数" },
     unit: { en: "yr", ja: "年", zh: "年" },
     step: 1,
   },
@@ -88,6 +94,13 @@ const LABELS: Record<Lang, Record<string, string>> = {
     value: "市值",
   },
 };
+
+function capWarningText(lang: Lang, overflow: number): string {
+  const amt = `${fmt(overflow)}${lang === "en" ? " man-yen" : "万円"}`;
+  if (lang === "ja") return `NISA枠（年間360万円・生涯1800万円）を${amt}超過しています。超過分は課税口座として計算しています。`;
+  if (lang === "zh") return `投入金额已超出NISA额度（年360万円/终身1800万円）${amt}，超出部分按应税账户计算。`;
+  return `Contributions exceed the NISA cap (¥3.6M/yr, ¥18M lifetime) by ${amt}; the excess is taxed as a regular account.`;
+}
 
 function readInputs(comp: Record<string, unknown> | undefined): StockInputs {
   const result = { ...DEFAULTS };
@@ -204,6 +217,10 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
           </span>
         </label>
       </div>
+
+      {values.account === "nisa" && result.nisaCapExceeded && (
+        <div className={styles.capWarning}>{capWarningText(lang, result.nisaOverflow)}</div>
+      )}
 
       <div className={styles.sectionTitle}>
         {t.results}（{values.years}

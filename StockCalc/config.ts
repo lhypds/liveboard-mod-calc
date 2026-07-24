@@ -23,6 +23,14 @@ export const config = {
           },
         },
         {
+          key: { en: "NISA cap", ja: "NISA枠", zh: "NISA额度" },
+          value: {
+            en: "Annual cap 3.6M yen, lifetime cap 18M yen; contributions beyond that are taxed as a regular account",
+            ja: "年間360万円・生涯1800万円が上限。超過分は課税口座として計算",
+            zh: "年度上限360万円，终身上限1800万円；超出部分按应税账户计税",
+          },
+        },
+        {
           key: { en: "Unit", ja: "単位", zh: "单位" },
           value: { en: "Man-yen (10,000 JPY)", ja: "万円", zh: "万日元" },
         },
@@ -42,6 +50,7 @@ export const config = {
     annualReturn: 5, // 期待利回り (%/年)
     annualFee: 0.1, // 信託報酬など (%/年)
     years: 20, // 運用年数
+    contribYears: 20, // 積立年数（運用年数以下。以降は追加投資なしで保有）
     // "nisa" (非課税) | "taxable" (課税口座 20.315%)
     account: "nisa",
   },

@@ -150,6 +150,14 @@
   margin-left: 2px;
 }
 
+.capWarning {
+  font-size: 11px;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 4px 8px;
+}
+
 .pos {
   color: #15803d;
 }
