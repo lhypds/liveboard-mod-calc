@@ -26,6 +26,9 @@
 
 .fieldLabel {
   font-size: 10px;
+  line-height: 14px;
+  height: 14px;
+  flex-shrink: 0;
   color: #64748b;
   white-space: nowrap;
   overflow: hidden;
@@ -34,30 +37,82 @@
 
 .inputWrap {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
+  height: 27px;
+  border: 1px solid #000;
+  background: #fff;
 }
 
 .input {
-  width: 100%;
+  flex: 1;
   min-width: 0;
+  height: 100%;
   box-sizing: border-box;
-  border: 1px solid #000;
-  padding: 2px 6px;
-  font-size: 12px;
+  border: none;
+  padding: 0 8px;
+  font-size: 13px;
   color: #0f172a;
-  background: #fff;
+  background: transparent;
   outline: none;
 }
 
-.input:focus {
-  border-color: #000;
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .unit {
+  display: flex;
+  align-items: center;
   font-size: 10px;
+  line-height: 1;
   color: #64748b;
   white-space: nowrap;
+  padding-right: 6px;
+}
+
+.stepper {
+  display: flex;
+  flex-direction: column;
+  width: 16px;
+  height: 100%;
+  min-height: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-left: 1px solid #000;
+}
+
+.stepBtn {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 7px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stepBtn:first-child {
+  border-bottom: 1px solid #000;
+}
+
+.stepBtn:hover {
+  background: #e2e8f0;
+}
+
+.stepBtn:active {
+  background: #cbd5e1;
 }
 
 .summaryGrid {

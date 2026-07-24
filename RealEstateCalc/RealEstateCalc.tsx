@@ -9,55 +9,79 @@ type I18n = Record<Lang, string>;
 
 const DEFAULTS = defaultConfig.comp as RealEstateInputs;
 
-const FIELDS: Array<{ key: keyof RealEstateInputs; label: I18n; unit: I18n }> = [
+const FIELDS: Array<{ key: keyof RealEstateInputs; label: I18n; unit: I18n; step: number }> = [
   {
     key: "price",
     label: { en: "Property price", ja: "物件価格", zh: "房产价格" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 10,
   },
   {
     key: "loanAmount",
     label: { en: "Loan amount", ja: "借入額", zh: "贷款金额" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 10,
   },
-  { key: "interestRate", label: { en: "Interest rate", ja: "金利", zh: "利率" }, unit: { en: "%/yr", ja: "%/年", zh: "%/年" } },
-  { key: "loanYears", label: { en: "Loan term", ja: "返済期間", zh: "还款年限" }, unit: { en: "yr", ja: "年", zh: "年" } },
+  {
+    key: "interestRate",
+    label: { en: "Interest rate", ja: "金利", zh: "利率" },
+    unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
+    step: 0.1,
+  },
+  {
+    key: "loanYears",
+    label: { en: "Loan term", ja: "返済期間", zh: "还款年限" },
+    unit: { en: "yr", ja: "年", zh: "年" },
+    step: 1,
+  },
   {
     key: "brokerFee",
     label: { en: "Broker fee", ja: "仲介手数料", zh: "中介费" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
   },
   {
     key: "registrationFee",
     label: { en: "Registration fee", ja: "登記費用", zh: "登记费用" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
   },
   {
     key: "acquisitionTax",
     label: { en: "Acquisition tax", ja: "不動産取得税", zh: "不动产取得税" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
   },
   {
     key: "otherFees",
     label: { en: "Other fees", ja: "その他諸費用", zh: "其他费用" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
   },
   {
     key: "propertyTaxYearly",
     label: { en: "Property tax / yr", ja: "固定資産税等（年）", zh: "固定资产税（年）" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
   },
   {
     key: "maintenanceYearly",
     label: { en: "Maintenance / yr", ja: "管理・修繕（年）", zh: "管理・修缮（年）" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
   },
   {
     key: "appreciationRate",
     label: { en: "Value change", ja: "価格変動率", zh: "价格变动率" },
     unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
+    step: 0.1,
   },
-  { key: "years", label: { en: "Holding years", ja: "保有年数", zh: "持有年数" }, unit: { en: "yr", ja: "年", zh: "年" } },
+  {
+    key: "years",
+    label: { en: "Holding years", ja: "保有年数", zh: "持有年数" },
+    unit: { en: "yr", ja: "年", zh: "年" },
+    step: 1,
+  },
 ];
 
 const LABELS: Record<Lang, Record<string, string>> = {
@@ -161,6 +185,13 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     save?.(next);
   }
 
+  function handleStep(key: keyof RealEstateInputs, step: number) {
+    const current = Number(draft[key]);
+    const base = Number.isFinite(current) ? current : values[key];
+    const next = Math.round((base + step) * 100) / 100;
+    handleChange(key, String(next));
+  }
+
   const result = calcRealEstate(values);
   const downPayment = Math.max(0, values.price - values.loanAmount);
 
@@ -191,6 +222,14 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
                 onChange={(e) => handleChange(f.key, e.target.value)}
               />
               <span className={styles.unit}>{f.unit[lang]}</span>
+              <span className={styles.stepper}>
+                <button type="button" tabIndex={-1} className={styles.stepBtn} onClick={() => handleStep(f.key, f.step)}>
+                  ▲
+                </button>
+                <button type="button" tabIndex={-1} className={styles.stepBtn} onClick={() => handleStep(f.key, -f.step)}>
+                  ▼
+                </button>
+              </span>
             </span>
           </label>
         ))}

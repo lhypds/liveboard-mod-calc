@@ -11,24 +11,37 @@ const DEFAULTS = defaultConfig.comp as StockInputs;
 
 type NumberKey = Exclude<keyof StockInputs, "account">;
 
-const FIELDS: Array<{ key: NumberKey; label: I18n; unit: I18n }> = [
+const FIELDS: Array<{ key: NumberKey; label: I18n; unit: I18n; step: number }> = [
   {
     key: "initial",
     label: { en: "Initial amount", ja: "初期投資額", zh: "初始投资" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 10,
   },
   {
     key: "monthly",
     label: { en: "Monthly amount", ja: "毎月積立額", zh: "每月定投" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
   },
   {
     key: "annualReturn",
     label: { en: "Expected return", ja: "期待利回り", zh: "预期收益率" },
     unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
+    step: 0.1,
   },
-  { key: "annualFee", label: { en: "Fund fee", ja: "信託報酬", zh: "管理费率" }, unit: { en: "%/yr", ja: "%/年", zh: "%/年" } },
-  { key: "years", label: { en: "Years", ja: "運用年数", zh: "投资年数" }, unit: { en: "yr", ja: "年", zh: "年" } },
+  {
+    key: "annualFee",
+    label: { en: "Fund fee", ja: "信託報酬", zh: "管理费率" },
+    unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
+    step: 0.1,
+  },
+  {
+    key: "years",
+    label: { en: "Years", ja: "運用年数", zh: "投资年数" },
+    unit: { en: "yr", ja: "年", zh: "年" },
+    step: 1,
+  },
 ];
 
 const LABELS: Record<Lang, Record<string, string>> = {
@@ -130,6 +143,13 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
     saveComp({ ...comp, [key]: num });
   }
 
+  function handleStep(key: NumberKey, step: number) {
+    const current = Number(draft[key]);
+    const base = Number.isFinite(current) ? current : values[key];
+    const next = Math.round((base + step) * 100) / 100;
+    handleChange(key, String(next));
+  }
+
   const result = calcStock(values);
 
   const summary: Array<{ label: string; value: string; tone?: "pos" | "neg" }> = [
@@ -159,19 +179,29 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
                 onChange={(e) => handleChange(f.key, e.target.value)}
               />
               <span className={styles.unit}>{f.unit[lang]}</span>
+              <span className={styles.stepper}>
+                <button type="button" tabIndex={-1} className={styles.stepBtn} onClick={() => handleStep(f.key, f.step)}>
+                  ▲
+                </button>
+                <button type="button" tabIndex={-1} className={styles.stepBtn} onClick={() => handleStep(f.key, -f.step)}>
+                  ▼
+                </button>
+              </span>
             </span>
           </label>
         ))}
         <label className={styles.field}>
           <span className={styles.fieldLabel}>{t.account}</span>
-          <select
-            className={styles.input}
-            value={values.account}
-            onChange={(e) => saveComp({ ...comp, account: e.target.value })}
-          >
-            <option value="nisa">{t.nisa}</option>
-            <option value="taxable">{t.taxable}</option>
-          </select>
+          <span className={styles.inputWrap}>
+            <select
+              className={styles.input}
+              value={values.account}
+              onChange={(e) => saveComp({ ...comp, account: e.target.value })}
+            >
+              <option value="nisa">{t.nisa}</option>
+              <option value="taxable">{t.taxable}</option>
+            </select>
+          </span>
         </label>
       </div>
 

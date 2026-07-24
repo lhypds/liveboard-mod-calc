@@ -31,10 +31,10 @@ export const config = {
   ],
   x: 0,
   y: 0,
-  w: 36,
-  h: 32,
-  minW: 18,
-  minH: 18,
+  w: 40,
+  h: 36,
+  minW: 20,
+  minH: 20,
   comp: {
     // All money values are in man-yen (万円)
     initial: 100, // 初期投資額
