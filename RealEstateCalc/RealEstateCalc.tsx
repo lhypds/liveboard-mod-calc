@@ -9,7 +9,15 @@ type I18n = Record<Lang, string>;
 
 const DEFAULTS = defaultConfig.comp as RealEstateInputs;
 
-const FIELDS: Array<{ key: keyof RealEstateInputs; label: I18n; unit: I18n; step: number }> = [
+type NumberKey = Exclude<keyof RealEstateInputs, "propertyType">;
+
+const FIELDS: Array<{
+  key: NumberKey;
+  label: I18n;
+  unit: I18n;
+  step: number;
+  disabledWhen?: (values: RealEstateInputs) => boolean;
+}> = [
   {
     key: "price",
     label: { en: "Property price", ja: "物件価格", zh: "房产价格" },
@@ -36,9 +44,10 @@ const FIELDS: Array<{ key: keyof RealEstateInputs; label: I18n; unit: I18n; step
   },
   {
     key: "brokerFee",
-    label: { en: "Broker fee", ja: "仲介手数料", zh: "中介费" },
+    label: { en: "Buy broker fee", ja: "購入仲介手数料", zh: "购入中介费" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 1,
+    disabledWhen: (v) => v.propertyType === "new",
   },
   {
     key: "registrationFee",
@@ -69,12 +78,19 @@ const FIELDS: Array<{ key: keyof RealEstateInputs; label: I18n; unit: I18n; step
     label: { en: "Maintenance / yr", ja: "管理・修繕（年）", zh: "管理・修缮（年）" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 1,
+    disabledWhen: (v) => v.propertyType === "used",
   },
   {
     key: "appreciationRate",
     label: { en: "Value change", ja: "価格変動率", zh: "价格变动率" },
     unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
     step: 0.1,
+  },
+  {
+    key: "sellFee",
+    label: { en: "Sell broker fee", ja: "売却仲介手数料", zh: "卖出中介费" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
   },
   {
     key: "years",
@@ -96,11 +112,15 @@ const LABELS: Record<Lang, Record<string, string>> = {
     equity: "Equity",
     interestPaid: "Interest paid",
     runningCost: "Running cost",
+    sellFee: "Sell fee",
     net: "Net if sold",
     year: "Yr",
     value: "Value",
     loan: "Loan",
     cashOut: "Cash out",
+    propertyType: "Property type",
+    new: "New build",
+    used: "Used",
   },
   ja: {
     inputs: "入力",
@@ -113,11 +133,15 @@ const LABELS: Record<Lang, Record<string, string>> = {
     equity: "純資産",
     interestPaid: "支払利息",
     runningCost: "維持費累計",
+    sellFee: "売却手数料",
     net: "売却時損益",
     year: "年",
     value: "物件価値",
     loan: "残債",
     cashOut: "累計支出",
+    propertyType: "物件種別",
+    new: "新築",
+    used: "中古",
   },
   zh: {
     inputs: "输入",
@@ -130,11 +154,15 @@ const LABELS: Record<Lang, Record<string, string>> = {
     equity: "净资产",
     interestPaid: "已付利息",
     runningCost: "持有成本",
+    sellFee: "卖出手续费",
     net: "出售时损益",
     year: "年",
     value: "房产价值",
     loan: "余额",
     cashOut: "累计支出",
+    propertyType: "房产类型",
+    new: "新房",
+    used: "存量房",
   },
 };
 
@@ -142,13 +170,17 @@ function readInputs(comp: Record<string, unknown> | undefined): RealEstateInputs
   const result = { ...DEFAULTS };
   for (const key of Object.keys(DEFAULTS) as Array<keyof RealEstateInputs>) {
     const v = comp?.[key];
-    if (typeof v === "number" && Number.isFinite(v)) result[key] = v;
+    if (key === "propertyType") {
+      if (v === "new" || v === "used") result.propertyType = v;
+    } else if (typeof v === "number" && Number.isFinite(v)) {
+      result[key] = v;
+    }
   }
   return result;
 }
 
 function toDraft(values: RealEstateInputs): Record<string, string> {
-  return Object.fromEntries(Object.entries(values).map(([k, v]) => [k, String(v)]));
+  return Object.fromEntries(FIELDS.map((f) => [f.key, String(values[f.key])]));
 }
 
 function fmt(v: number, digits = 0): string {
@@ -176,16 +208,19 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     }
   }, [comp]);
 
-  function handleChange(key: keyof RealEstateInputs, raw: string) {
-    setDraft((prev) => ({ ...prev, [key]: raw }));
-    const num = Number(raw);
-    if (raw.trim() === "" || !Number.isFinite(num)) return;
-    const next = { ...comp, [key]: num };
+  function saveComp(next: Record<string, unknown>) {
     lastSavedRef.current = JSON.stringify(readInputs(next));
     save?.(next);
   }
 
-  function handleStep(key: keyof RealEstateInputs, step: number) {
+  function handleChange(key: NumberKey, raw: string) {
+    setDraft((prev) => ({ ...prev, [key]: raw }));
+    const num = Number(raw);
+    if (raw.trim() === "" || !Number.isFinite(num)) return;
+    saveComp({ ...comp, [key]: num });
+  }
+
+  function handleStep(key: NumberKey, step: number) {
     const current = Number(draft[key]);
     const base = Number.isFinite(current) ? current : values[key];
     const next = Math.round((base + step) * 100) / 100;
@@ -204,6 +239,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     { label: t.equity, value: fmt(result.final.equity) },
     { label: t.interestPaid, value: fmt(result.interestPaid) },
     { label: t.runningCost, value: fmt(result.runningCost) },
+    { label: t.sellFee, value: fmt(result.final.sellFee) },
     { label: t.net, value: fmt(result.final.net), tone: result.final.net >= 0 ? "pos" : "neg" },
   ];
 
@@ -211,28 +247,57 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     <div className={styles.container}>
       <div className={styles.sectionTitle}>{t.inputs}</div>
       <div className={styles.inputGrid}>
-        {FIELDS.map((f) => (
-          <label key={f.key} className={styles.field}>
-            <span className={styles.fieldLabel}>{f.label[lang]}</span>
-            <span className={styles.inputWrap}>
-              <input
-                type="number"
-                className={styles.input}
-                value={draft[f.key] ?? ""}
-                onChange={(e) => handleChange(f.key, e.target.value)}
-              />
-              <span className={styles.unit}>{f.unit[lang]}</span>
-              <span className={styles.stepper}>
-                <button type="button" tabIndex={-1} className={styles.stepBtn} onClick={() => handleStep(f.key, f.step)}>
-                  ▲
-                </button>
-                <button type="button" tabIndex={-1} className={styles.stepBtn} onClick={() => handleStep(f.key, -f.step)}>
-                  ▼
-                </button>
+        {FIELDS.map((f) => {
+          const disabled = f.disabledWhen?.(values) ?? false;
+          return (
+            <label key={f.key} className={`${styles.field} ${disabled ? styles.fieldDisabled : ""}`}>
+              <span className={styles.fieldLabel}>{f.label[lang]}</span>
+              <span className={styles.inputWrap}>
+                <input
+                  type="number"
+                  className={styles.input}
+                  value={draft[f.key] ?? ""}
+                  disabled={disabled}
+                  onChange={(e) => handleChange(f.key, e.target.value)}
+                />
+                <span className={styles.unit}>{f.unit[lang]}</span>
+                <span className={styles.stepper}>
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className={styles.stepBtn}
+                    disabled={disabled}
+                    onClick={() => handleStep(f.key, f.step)}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className={styles.stepBtn}
+                    disabled={disabled}
+                    onClick={() => handleStep(f.key, -f.step)}
+                  >
+                    ▼
+                  </button>
+                </span>
               </span>
-            </span>
-          </label>
-        ))}
+            </label>
+          );
+        })}
+        <label className={styles.field}>
+          <span className={styles.fieldLabel}>{t.propertyType}</span>
+          <span className={styles.inputWrap}>
+            <select
+              className={styles.input}
+              value={values.propertyType}
+              onChange={(e) => saveComp({ ...comp, propertyType: e.target.value })}
+            >
+              <option value="new">{t.new}</option>
+              <option value="used">{t.used}</option>
+            </select>
+          </span>
+        </label>
       </div>
 
       <div className={styles.sectionTitle}>
@@ -260,6 +325,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
               <th>{t.loan}</th>
               <th>{t.equity}</th>
               <th>{t.cashOut}</th>
+              <th>{t.sellFee}</th>
               <th>{t.net}</th>
             </tr>
           </thead>
@@ -271,6 +337,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
                 <td>{fmt(r.loanBalance)}</td>
                 <td>{fmt(r.equity)}</td>
                 <td>{fmt(r.totalCashOut)}</td>
+                <td>{fmt(r.sellFee)}</td>
                 <td className={r.net >= 0 ? styles.pos : styles.neg}>{fmt(r.net)}</td>
               </tr>
             ))}

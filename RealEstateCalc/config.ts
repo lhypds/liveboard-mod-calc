@@ -18,6 +18,22 @@ export const config = {
           key: { en: "Unit", ja: "単位", zh: "单位" },
           value: { en: "Man-yen (10,000 JPY)", ja: "万円", zh: "万日元" },
         },
+        {
+          key: { en: "Sell fee", ja: "売却手数料", zh: "卖出手续费" },
+          value: {
+            en: "Net-if-sold subtracts a fixed selling broker fee you enter directly",
+            ja: "売却時損益には直接入力した仲介手数料を差し引いて計算",
+            zh: "出售时损益已扣除直接输入的卖出中介费",
+          },
+        },
+        {
+          key: { en: "Property type", ja: "物件種別", zh: "房产类型" },
+          value: {
+            en: "New: no buy-side broker fee. Used: no ongoing maintenance reserve.",
+            ja: "新築: 仲介手数料なし。中古: 修繕積立金なし。",
+            zh: "新房：不计购入中介费。存量房：不计修缮积立金。",
+          },
+        },
       ],
     },
   ],
@@ -40,6 +56,9 @@ export const config = {
     propertyTaxYearly: 15, // 固定資産税・都市計画税 (万円/年)
     maintenanceYearly: 36, // 管理費・修繕積立金 (万円/年)
     appreciationRate: 0, // 価格変動率 (%/年)
+    sellFee: 165, // 売却時仲介手数料
     years: 10, // 保有年数
+    // "new" (新築) | "used" (中古)
+    propertyType: "used",
   },
 };
