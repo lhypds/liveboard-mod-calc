@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import TextArea from "@ui/TextArea";
 import { calcRealEstate, type RealEstateInputs } from "./calc";
 import { config as defaultConfig } from "./config";
 import styles from "./calc.module.css";
@@ -103,6 +104,8 @@ const FIELDS: Array<{
 const LABELS: Record<Lang, Record<string, string>> = {
   en: {
     inputs: "Inputs",
+    note: "Note",
+    notePlaceholder: "Type your notes here...",
     results: "Estimate after holding period",
     monthlyPayment: "Monthly payment",
     downPayment: "Down payment",
@@ -124,6 +127,8 @@ const LABELS: Record<Lang, Record<string, string>> = {
   },
   ja: {
     inputs: "入力",
+    note: "メモ",
+    notePlaceholder: "メモを入力...",
     results: "保有期間後の試算",
     monthlyPayment: "月々返済額",
     downPayment: "頭金",
@@ -145,6 +150,8 @@ const LABELS: Record<Lang, Record<string, string>> = {
   },
   zh: {
     inputs: "输入",
+    note: "笔记",
+    notePlaceholder: "在此输入笔记...",
     results: "持有期后估算",
     monthlyPayment: "月供",
     downPayment: "首付",
@@ -183,6 +190,14 @@ function toDraft(values: RealEstateInputs): Record<string, string> {
   return Object.fromEntries(FIELDS.map((f) => [f.key, String(values[f.key])]));
 }
 
+function readNote(comp: Record<string, unknown> | undefined): string {
+  return typeof comp?.note === "string" ? comp.note : "";
+}
+
+function readNoteHeight(comp: Record<string, unknown> | undefined): number | undefined {
+  return typeof comp?.noteHeight === "number" ? comp.noteHeight : undefined;
+}
+
 function fmt(v: number, digits = 0): string {
   return v.toLocaleString("ja-JP", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
@@ -197,20 +212,52 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
 
   const values = readInputs(comp);
   const [draft, setDraft] = useState<Record<string, string>>(() => toDraft(values));
+  const [noteDraft, setNoteDraft] = useState<string>(() => readNote(comp));
+  const [noteHeight, setNoteHeight] = useState<number | undefined>(() => readNoteHeight(comp));
+  const noteRef = useRef<HTMLTextAreaElement>(null);
 
   // Sync when comp changes from outside (e.g. import/restore, edit modal)
-  const lastSavedRef = useRef(JSON.stringify(values));
+  const lastSavedRef = useRef(JSON.stringify({ values, note: readNote(comp), noteHeight: readNoteHeight(comp) }));
   useEffect(() => {
-    const incoming = JSON.stringify(readInputs(comp));
+    const incomingValues = readInputs(comp);
+    const incomingNote = readNote(comp);
+    const incomingNoteHeight = readNoteHeight(comp);
+    const incoming = JSON.stringify({ values: incomingValues, note: incomingNote, noteHeight: incomingNoteHeight });
     if (incoming !== lastSavedRef.current) {
       lastSavedRef.current = incoming;
-      setDraft(toDraft(readInputs(comp)));
+      setDraft(toDraft(incomingValues));
+      setNoteDraft(incomingNote);
+      setNoteHeight(incomingNoteHeight);
     }
   }, [comp]);
 
   function saveComp(next: Record<string, unknown>) {
-    lastSavedRef.current = JSON.stringify(readInputs(next));
+    lastSavedRef.current = JSON.stringify({ values: readInputs(next), note: readNote(next), noteHeight: readNoteHeight(next) });
     save?.(next);
+  }
+
+  // Persist the note textarea's drag-resized height so it doesn't reset on reload
+  const noteHeightRef = useRef(noteHeight);
+  noteHeightRef.current = noteHeight;
+  const saveNoteHeightRef = useRef((_h: number) => {});
+  saveNoteHeightRef.current = (h: number) => {
+    if (noteHeightRef.current === h) return;
+    setNoteHeight(h);
+    saveComp({ ...comp, noteHeight: h });
+  };
+
+  useEffect(() => {
+    const el = noteRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => saveNoteHeightRef.current(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  function handleNoteChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const next = e.target.value;
+    setNoteDraft(next);
+    saveComp({ ...comp, note: next });
   }
 
   function handleChange(key: NumberKey, raw: string) {
@@ -343,6 +390,19 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className={styles.noteSection}>
+        <div className={styles.sectionTitle}>{t.note}</div>
+        <TextArea
+          ref={noteRef}
+          className={styles.noteInput}
+          value={noteDraft}
+          onChange={handleNoteChange}
+          placeholder={t.notePlaceholder}
+          style={noteHeight ? { height: `${noteHeight}px` } : undefined}
+          minHeight={50}
+        />
       </div>
     </div>
   );

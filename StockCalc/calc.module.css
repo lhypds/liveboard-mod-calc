@@ -1,9 +1,14 @@
 .container {
   height: 100%;
   overflow: auto;
+  scrollbar-width: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
 }
 
 .sectionTitle {
@@ -168,6 +173,11 @@
 
 .tableWrap {
   overflow: auto;
+  scrollbar-width: none;
+}
+
+.tableWrap::-webkit-scrollbar {
+  display: none;
 }
 
 .table {

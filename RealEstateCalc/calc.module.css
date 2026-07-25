@@ -1,9 +1,14 @@
 .container {
   height: 100%;
   overflow: auto;
+  scrollbar-width: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
 }
 
 .sectionTitle {
@@ -129,6 +134,22 @@
   background: #cbd5e1;
 }
 
+.noteSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.noteInput {
+  min-height: 50px;
+  box-sizing: border-box;
+  border: 1px solid #000;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  color: #0f172a;
+}
+
 .summaryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -174,6 +195,11 @@
 
 .tableWrap {
   overflow: auto;
+  scrollbar-width: none;
+}
+
+.tableWrap::-webkit-scrollbar {
+  display: none;
 }
 
 .table {
