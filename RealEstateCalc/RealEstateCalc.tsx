@@ -105,7 +105,6 @@ const LABELS: Record<Lang, Record<string, string>> = {
   en: {
     inputs: "Inputs",
     note: "Note",
-    notePlaceholder: "Type your notes here...",
     results: "Estimate after holding period",
     monthlyPayment: "Monthly payment",
     downPayment: "Down payment",
@@ -128,7 +127,6 @@ const LABELS: Record<Lang, Record<string, string>> = {
   ja: {
     inputs: "入力",
     note: "メモ",
-    notePlaceholder: "メモを入力...",
     results: "保有期間後の試算",
     monthlyPayment: "月々返済額",
     downPayment: "頭金",
@@ -151,7 +149,6 @@ const LABELS: Record<Lang, Record<string, string>> = {
   zh: {
     inputs: "输入",
     note: "笔记",
-    notePlaceholder: "在此输入笔记...",
     results: "持有期后估算",
     monthlyPayment: "月供",
     downPayment: "首付",
@@ -399,7 +396,6 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
           className={styles.noteInput}
           value={noteDraft}
           onChange={handleNoteChange}
-          placeholder={t.notePlaceholder}
           style={noteHeight ? { height: `${noteHeight}px` } : undefined}
           minHeight={50}
         />
