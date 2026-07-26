@@ -29,9 +29,9 @@ export const config = {
         {
           key: { en: "Property type", ja: "物件種別", zh: "房产类型" },
           value: {
-            en: "New: no buy-side broker fee. Used: no ongoing maintenance reserve.",
-            ja: "新築: 仲介手数料なし。中古: 修繕積立金なし。",
-            zh: "新房：不计购入中介费。存量房：不计修缮积立金。",
+            en: "New: no buy-side broker fee. Used: no repair reserve fund (still pays ongoing maintenance).",
+            ja: "新築: 仲介手数料なし。中古: 修繕積立基金なし（管理・修繕は引き続き発生）。",
+            zh: "新房：不计购入中介费。存量房：不计修缮积立基金（仍需支付日常修缮费）。",
           },
         },
       ],
@@ -53,6 +53,7 @@ export const config = {
     registrationFee: 50, // 登記費用
     acquisitionTax: 50, // 不動産取得税
     otherFees: 30, // 印紙税・融資手数料など
+    repairReserveFund: 20, // 修繕積立基金（新築時のみ）
     propertyTaxYearly: 15, // 固定資産税・都市計画税 (万円/年)
     maintenanceYearly: 36, // 管理費・修繕積立金 (万円/年)
     appreciationRate: 0, // 価格変動率 (%/年)

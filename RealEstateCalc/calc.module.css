@@ -143,6 +143,7 @@
 .noteInput {
   min-height: 50px;
   box-sizing: border-box;
+  padding: 4px 6px;
   border: 1px solid #000;
   background: #fff;
   font-family: inherit;

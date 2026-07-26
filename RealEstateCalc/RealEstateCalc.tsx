@@ -11,9 +11,11 @@ type I18n = Record<Lang, string>;
 const DEFAULTS = defaultConfig.comp as RealEstateInputs;
 
 type NumberKey = Exclude<keyof RealEstateInputs, "propertyType">;
+type Section = "basic" | "contract" | "residence";
 
 const FIELDS: Array<{
   key: NumberKey;
+  section: Section;
   label: I18n;
   unit: I18n;
   step: number;
@@ -21,82 +23,102 @@ const FIELDS: Array<{
 }> = [
   {
     key: "price",
+    section: "basic",
     label: { en: "Property price", ja: "物件価格", zh: "房产价格" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 10,
   },
   {
     key: "loanAmount",
+    section: "basic",
     label: { en: "Loan amount", ja: "借入額", zh: "贷款金额" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 10,
   },
   {
     key: "interestRate",
+    section: "basic",
     label: { en: "Interest rate", ja: "金利", zh: "利率" },
     unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
     step: 0.1,
   },
   {
     key: "loanYears",
+    section: "basic",
     label: { en: "Loan term", ja: "返済期間", zh: "还款年限" },
     unit: { en: "yr", ja: "年", zh: "年" },
     step: 1,
   },
   {
-    key: "brokerFee",
-    label: { en: "Buy broker fee", ja: "購入仲介手数料", zh: "购入中介费" },
-    unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 1,
-    disabledWhen: (v) => v.propertyType === "new",
-  },
-  {
-    key: "registrationFee",
-    label: { en: "Registration fee", ja: "登記費用", zh: "登记费用" },
-    unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 1,
-  },
-  {
-    key: "acquisitionTax",
-    label: { en: "Acquisition tax", ja: "不動産取得税", zh: "不动产取得税" },
-    unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 1,
-  },
-  {
-    key: "otherFees",
-    label: { en: "Other fees", ja: "その他諸費用", zh: "其他费用" },
-    unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 1,
-  },
-  {
-    key: "propertyTaxYearly",
-    label: { en: "Property tax / yr", ja: "固定資産税等（年）", zh: "固定资产税（年）" },
-    unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 1,
-  },
-  {
-    key: "maintenanceYearly",
-    label: { en: "Maintenance / yr", ja: "管理・修繕（年）", zh: "管理・修缮（年）" },
-    unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 1,
-    disabledWhen: (v) => v.propertyType === "used",
-  },
-  {
     key: "appreciationRate",
+    section: "basic",
     label: { en: "Value change", ja: "価格変動率", zh: "价格变动率" },
     unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
     step: 0.1,
   },
   {
     key: "sellFee",
+    section: "basic",
     label: { en: "Sell broker fee", ja: "売却仲介手数料", zh: "卖出中介费" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 1,
   },
   {
     key: "years",
+    section: "basic",
     label: { en: "Holding years", ja: "保有年数", zh: "持有年数" },
     unit: { en: "yr", ja: "年", zh: "年" },
+    step: 1,
+  },
+  {
+    key: "brokerFee",
+    section: "contract",
+    label: { en: "Buy broker fee", ja: "購入仲介手数料", zh: "购入中介费" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+    disabledWhen: (v) => v.propertyType === "new",
+  },
+  {
+    key: "repairReserveFund",
+    section: "contract",
+    label: { en: "Repair reserve fund", ja: "修繕積立基金", zh: "修缮积立基金" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+    disabledWhen: (v) => v.propertyType === "used",
+  },
+  {
+    key: "registrationFee",
+    section: "contract",
+    label: { en: "Registration fee", ja: "登記費用", zh: "登记费用" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+  },
+  {
+    key: "acquisitionTax",
+    section: "contract",
+    label: { en: "Acquisition tax", ja: "不動産取得税", zh: "不动产取得税" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+  },
+  {
+    key: "otherFees",
+    section: "contract",
+    label: { en: "Other fees", ja: "その他諸費用", zh: "其他费用" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+  },
+  {
+    key: "propertyTaxYearly",
+    section: "residence",
+    label: { en: "Property tax / yr", ja: "固定資産税等（年）", zh: "固定资产税（年）" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+  },
+  {
+    key: "maintenanceYearly",
+    section: "residence",
+    label: { en: "Maintenance / yr", ja: "管理・修繕（年）", zh: "管理・修缮（年）" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 1,
   },
 ];
@@ -104,7 +126,9 @@ const FIELDS: Array<{
 const LABELS: Record<Lang, Record<string, string>> = {
   en: {
     inputs: "Inputs",
-    note: "Note",
+    contractFees: "Contract-time fees",
+    residenceFees: "Residence-time fees",
+    note: "Basic info",
     results: "Estimate after holding period",
     monthlyPayment: "Monthly payment",
     downPayment: "Down payment",
@@ -126,7 +150,9 @@ const LABELS: Record<Lang, Record<string, string>> = {
   },
   ja: {
     inputs: "入力",
-    note: "メモ",
+    contractFees: "契約時費用",
+    residenceFees: "住居時費用",
+    note: "基本情報",
     results: "保有期間後の試算",
     monthlyPayment: "月々返済額",
     downPayment: "頭金",
@@ -148,7 +174,9 @@ const LABELS: Record<Lang, Record<string, string>> = {
   },
   zh: {
     inputs: "输入",
-    note: "笔记",
+    contractFees: "签约费用",
+    residenceFees: "居住费用",
+    note: "基本信息",
     results: "持有期后估算",
     monthlyPayment: "月供",
     downPayment: "首付",
@@ -287,48 +315,62 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     { label: t.net, value: fmt(result.final.net), tone: result.final.net >= 0 ? "pos" : "neg" },
   ];
 
+  function renderField(f: (typeof FIELDS)[number]) {
+    const disabled = f.disabledWhen?.(values) ?? false;
+    return (
+      <label key={f.key} className={`${styles.field} ${disabled ? styles.fieldDisabled : ""}`}>
+        <span className={styles.fieldLabel}>{f.label[lang]}</span>
+        <span className={styles.inputWrap}>
+          <input
+            type="number"
+            className={styles.input}
+            value={draft[f.key] ?? ""}
+            disabled={disabled}
+            onChange={(e) => handleChange(f.key, e.target.value)}
+          />
+          <span className={styles.unit}>{f.unit[lang]}</span>
+          <span className={styles.stepper}>
+            <button
+              type="button"
+              tabIndex={-1}
+              className={styles.stepBtn}
+              disabled={disabled}
+              onClick={() => handleStep(f.key, f.step)}
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              tabIndex={-1}
+              className={styles.stepBtn}
+              disabled={disabled}
+              onClick={() => handleStep(f.key, -f.step)}
+            >
+              ▼
+            </button>
+          </span>
+        </span>
+      </label>
+    );
+  }
+
   return (
     <div className={styles.container}>
+      <div className={styles.noteSection}>
+        <div className={styles.sectionTitle}>{t.note}</div>
+        <TextArea
+          ref={noteRef}
+          className={styles.noteInput}
+          value={noteDraft}
+          onChange={handleNoteChange}
+          style={noteHeight ? { height: `${noteHeight}px` } : undefined}
+          minHeight={50}
+        />
+      </div>
+
       <div className={styles.sectionTitle}>{t.inputs}</div>
       <div className={styles.inputGrid}>
-        {FIELDS.map((f) => {
-          const disabled = f.disabledWhen?.(values) ?? false;
-          return (
-            <label key={f.key} className={`${styles.field} ${disabled ? styles.fieldDisabled : ""}`}>
-              <span className={styles.fieldLabel}>{f.label[lang]}</span>
-              <span className={styles.inputWrap}>
-                <input
-                  type="number"
-                  className={styles.input}
-                  value={draft[f.key] ?? ""}
-                  disabled={disabled}
-                  onChange={(e) => handleChange(f.key, e.target.value)}
-                />
-                <span className={styles.unit}>{f.unit[lang]}</span>
-                <span className={styles.stepper}>
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    className={styles.stepBtn}
-                    disabled={disabled}
-                    onClick={() => handleStep(f.key, f.step)}
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    className={styles.stepBtn}
-                    disabled={disabled}
-                    onClick={() => handleStep(f.key, -f.step)}
-                  >
-                    ▼
-                  </button>
-                </span>
-              </span>
-            </label>
-          );
-        })}
+        {FIELDS.filter((f) => f.section === "basic").map(renderField)}
         <label className={styles.field}>
           <span className={styles.fieldLabel}>{t.propertyType}</span>
           <span className={styles.inputWrap}>
@@ -343,6 +385,12 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
           </span>
         </label>
       </div>
+
+      <div className={styles.sectionTitle}>{t.contractFees}</div>
+      <div className={styles.inputGrid}>{FIELDS.filter((f) => f.section === "contract").map(renderField)}</div>
+
+      <div className={styles.sectionTitle}>{t.residenceFees}</div>
+      <div className={styles.inputGrid}>{FIELDS.filter((f) => f.section === "residence").map(renderField)}</div>
 
       <div className={styles.sectionTitle}>
         {t.results}（{values.years}
@@ -387,18 +435,6 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
             ))}
           </tbody>
         </table>
-      </div>
-
-      <div className={styles.noteSection}>
-        <div className={styles.sectionTitle}>{t.note}</div>
-        <TextArea
-          ref={noteRef}
-          className={styles.noteInput}
-          value={noteDraft}
-          onChange={handleNoteChange}
-          style={noteHeight ? { height: `${noteHeight}px` } : undefined}
-          minHeight={50}
-        />
       </div>
     </div>
   );
