@@ -147,6 +147,17 @@ const FIELDS: Array<{
   },
 ];
 
+// Field keys that flow into the "Purchase fees" summary total
+const PURCHASE_FEE_KEYS: NumberKey[] = [
+  "brokerFee",
+  "repairReserveFund",
+  "registrationFee",
+  "acquisitionTax",
+  "otherFees",
+  "loanFeeRate",
+  "loanOtherFees",
+];
+
 const LABELS: Record<Lang, Record<string, string>> = {
   en: {
     inputs: "Inputs",
@@ -283,6 +294,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
   const [draft, setDraft] = useState<Record<string, string>>(() => toDraft(values));
   const [noteDraft, setNoteDraft] = useState<string>(() => readNote(comp));
   const [noteHeight, setNoteHeight] = useState<number | undefined>(() => readNoteHeight(comp));
+  const [purchaseFeesInfoOpen, setPurchaseFeesInfoOpen] = useState(false);
   const noteRef = useRef<HTMLTextAreaElement>(null);
 
   // Sync when comp changes from outside (e.g. import/restore, edit modal)
@@ -363,10 +375,17 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
   const result = calcRealEstate(values);
   const downPayment = Math.max(0, values.price - values.loanAmount);
 
-  const summary: Array<{ label: string; value: string; tone?: "pos" | "neg" }> = [
+  const purchaseFeeLabels = PURCHASE_FEE_KEYS.filter((k) => {
+    const f = FIELDS.find((f) => f.key === k);
+    return !f?.disabledWhen?.(values);
+  })
+    .map((k) => FIELDS.find((f) => f.key === k)?.label[lang])
+    .filter((l): l is string => !!l);
+
+  const summary: Array<{ id?: string; label: string; value: string; tone?: "pos" | "neg" }> = [
     { label: t.monthlyPayment, value: fmt(result.monthlyPayment) },
     { label: t.downPayment, value: fmt(downPayment) },
-    { label: t.purchaseFees, value: fmt(result.purchaseFees) },
+    { id: "purchaseFees", label: t.purchaseFees, value: fmt(result.purchaseFees) },
     { label: t.propertyValue, value: fmt(result.final.propertyValue) },
     { label: t.loanBalance, value: fmt(result.final.loanBalance) },
     { label: t.equity, value: fmt(result.final.equity) },
@@ -469,7 +488,27 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
       <div className={styles.summaryGrid}>
         {summary.map((s) => (
           <div key={s.label} className={styles.tile}>
-            <span className={styles.tileLabel}>{s.label}</span>
+            <span className={styles.tileLabelRow}>
+              <span className={styles.tileLabel}>{s.label}</span>
+              {s.id === "purchaseFees" && (
+                <button
+                  type="button"
+                  className={styles.infoBtn}
+                  onClick={() => setPurchaseFeesInfoOpen((v) => !v)}
+                >
+                  ?
+                </button>
+              )}
+              {s.id === "purchaseFees" && purchaseFeesInfoOpen && (
+                <div className={styles.infoPopover}>
+                  <ul className={styles.infoList}>
+                    {purchaseFeeLabels.map((l) => (
+                      <li key={l}>{l}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </span>
             <span className={`${styles.tileValue} ${s.tone === "pos" ? styles.pos : ""} ${s.tone === "neg" ? styles.neg : ""}`}>
               {s.value}
               <span className={styles.tileUnit}>{lang === "en" ? "" : "万円"}</span>
