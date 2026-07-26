@@ -36,6 +36,11 @@ export type RealEstateResult = {
   runningCost: number;
 };
 
+// Standard Japan real estate agent fee: (price × 3% + 6万円) × 1.1 (10% consumption tax)
+export function estimateBrokerFee(price: number): number {
+  return Math.round((price * 0.03 + 6) * 1.1 * 100) / 100;
+}
+
 export function monthlyLoanPayment(loan: number, annualRatePct: number, years: number): number {
   const n = Math.max(1, Math.round(years * 12));
   const r = annualRatePct / 100 / 12;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TextArea from "@ui/TextArea";
-import { calcRealEstate, type RealEstateInputs } from "./calc";
+import { calcRealEstate, estimateBrokerFee, type RealEstateInputs } from "./calc";
 import { config as defaultConfig } from "./config";
 import styles from "./calc.module.css";
 
@@ -292,7 +292,13 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     setDraft((prev) => ({ ...prev, [key]: raw }));
     const num = Number(raw);
     if (raw.trim() === "" || !Number.isFinite(num)) return;
-    saveComp({ ...comp, [key]: num });
+    const next: Record<string, unknown> = { ...comp, [key]: num };
+    if (key === "price") {
+      const sellFee = estimateBrokerFee(num);
+      next.sellFee = sellFee;
+      setDraft((prev) => ({ ...prev, sellFee: String(sellFee) }));
+    }
+    saveComp(next);
   }
 
   function handleStep(key: NumberKey, step: number) {
