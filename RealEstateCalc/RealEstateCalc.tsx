@@ -11,7 +11,7 @@ type I18n = Record<Lang, string>;
 const DEFAULTS = defaultConfig.comp as RealEstateInputs;
 
 type NumberKey = Exclude<keyof RealEstateInputs, "propertyType">;
-type Section = "basic" | "contract" | "residence";
+type Section = "basic" | "contract" | "residence" | "sell";
 
 const FIELDS: Array<{
   key: NumberKey;
@@ -55,13 +55,6 @@ const FIELDS: Array<{
     label: { en: "Value change", ja: "価格変動率", zh: "价格变动率" },
     unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
     step: 0.1,
-  },
-  {
-    key: "sellFee",
-    section: "basic",
-    label: { en: "Sell broker fee", ja: "売却仲介手数料", zh: "卖出中介费" },
-    unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 1,
   },
   {
     key: "years",
@@ -121,6 +114,13 @@ const FIELDS: Array<{
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 1,
   },
+  {
+    key: "sellFee",
+    section: "sell",
+    label: { en: "Sell broker fee", ja: "売却仲介手数料", zh: "卖出中介费" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+  },
 ];
 
 const LABELS: Record<Lang, Record<string, string>> = {
@@ -128,6 +128,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     inputs: "Inputs",
     contractFees: "Contract-time fees",
     residenceFees: "Residence-time fees",
+    sellFees: "Sell-time fees",
     note: "Basic info",
     results: "Estimate after holding period",
     monthlyPayment: "Monthly payment",
@@ -152,6 +153,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     inputs: "入力",
     contractFees: "契約時費用",
     residenceFees: "住居時費用",
+    sellFees: "売却時費用",
     note: "基本情報",
     results: "保有期間後の試算",
     monthlyPayment: "月々返済額",
@@ -176,6 +178,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     inputs: "输入",
     contractFees: "签约费用",
     residenceFees: "居住费用",
+    sellFees: "售出费用",
     note: "基本信息",
     results: "持有期后估算",
     monthlyPayment: "月供",
@@ -370,7 +373,6 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
 
       <div className={styles.sectionTitle}>{t.inputs}</div>
       <div className={styles.inputGrid}>
-        {FIELDS.filter((f) => f.section === "basic").map(renderField)}
         <label className={styles.field}>
           <span className={styles.fieldLabel}>{t.propertyType}</span>
           <span className={styles.inputWrap}>
@@ -384,6 +386,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
             </select>
           </span>
         </label>
+        {FIELDS.filter((f) => f.section === "basic").map(renderField)}
       </div>
 
       <div className={styles.sectionTitle}>{t.contractFees}</div>
@@ -391,6 +394,9 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
 
       <div className={styles.sectionTitle}>{t.residenceFees}</div>
       <div className={styles.inputGrid}>{FIELDS.filter((f) => f.section === "residence").map(renderField)}</div>
+
+      <div className={styles.sectionTitle}>{t.sellFees}</div>
+      <div className={styles.inputGrid}>{FIELDS.filter((f) => f.section === "sell").map(renderField)}</div>
 
       <div className={styles.sectionTitle}>
         {t.results}（{values.years}
