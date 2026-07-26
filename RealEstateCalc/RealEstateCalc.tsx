@@ -295,7 +295,19 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
   const [noteDraft, setNoteDraft] = useState<string>(() => readNote(comp));
   const [noteHeight, setNoteHeight] = useState<number | undefined>(() => readNoteHeight(comp));
   const [purchaseFeesInfoOpen, setPurchaseFeesInfoOpen] = useState(false);
+  const purchaseFeesInfoRef = useRef<HTMLSpanElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!purchaseFeesInfoOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (purchaseFeesInfoRef.current && !purchaseFeesInfoRef.current.contains(e.target as Node)) {
+        setPurchaseFeesInfoOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [purchaseFeesInfoOpen]);
 
   // Sync when comp changes from outside (e.g. import/restore, edit modal)
   const lastSavedRef = useRef(JSON.stringify({ values, note: readNote(comp), noteHeight: readNoteHeight(comp) }));
@@ -488,7 +500,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
       <div className={styles.summaryGrid}>
         {summary.map((s) => (
           <div key={s.label} className={styles.tile}>
-            <span className={styles.tileLabelRow}>
+            <span className={styles.tileLabelRow} ref={s.id === "purchaseFees" ? purchaseFeesInfoRef : undefined}>
               <span className={styles.tileLabel}>{s.label}</span>
               {s.id === "purchaseFees" && (
                 <button
