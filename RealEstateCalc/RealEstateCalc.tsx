@@ -165,6 +165,15 @@ const PURCHASE_FEE_KEYS: NumberKey[] = [
   "loanOtherFees",
 ];
 
+// Keys sharing a label with another key in the same info popover - disambiguated by tagging which section they belong to
+const PURCHASE_FEE_SECTION_HINT: Partial<Record<NumberKey, "contractFees" | "loanSection">> = {
+  otherFees: "contractFees",
+  loanOtherFees: "loanSection",
+};
+
+// Field keys that flow into the "Running cost" summary total
+const RUNNING_COST_KEYS: NumberKey[] = ["propertyTaxYearly", "maintenanceMonthly", "otherFeesYearly"];
+
 const LABELS: Record<Lang, Record<string, string>> = {
   en: {
     inputs: "Inputs",
@@ -321,20 +330,21 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
   const [draft, setDraft] = useState<Record<string, string>>(() => toDraft(values));
   const [noteDraft, setNoteDraft] = useState<string>(() => readNote(comp));
   const [noteHeight, setNoteHeight] = useState<number | undefined>(() => readNoteHeight(comp));
-  const [purchaseFeesInfoOpen, setPurchaseFeesInfoOpen] = useState(false);
-  const purchaseFeesInfoRef = useRef<HTMLSpanElement>(null);
+  const [openInfoId, setOpenInfoId] = useState<string | null>(null);
+  const infoRefs = useRef<Record<string, HTMLSpanElement | null>>({});
   const noteRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (!purchaseFeesInfoOpen) return;
+    if (!openInfoId) return;
     function handleClickOutside(e: MouseEvent) {
-      if (purchaseFeesInfoRef.current && !purchaseFeesInfoRef.current.contains(e.target as Node)) {
-        setPurchaseFeesInfoOpen(false);
+      const el = infoRefs.current[openInfoId as string];
+      if (el && !el.contains(e.target as Node)) {
+        setOpenInfoId(null);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [purchaseFeesInfoOpen]);
+  }, [openInfoId]);
 
   // Sync when comp changes from outside (e.g. import/restore, edit modal)
   const lastSavedRef = useRef(JSON.stringify({ values, note: readNote(comp), noteHeight: readNoteHeight(comp) }));
@@ -417,19 +427,25 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
   const purchaseFeeLabels = PURCHASE_FEE_KEYS.filter((k) => {
     const f = FIELDS.find((f) => f.key === k);
     return !f?.disabledWhen?.(values);
-  })
-    .map((k) => FIELDS.find((f) => f.key === k)?.label[lang])
-    .filter((l): l is string => !!l);
+  }).map((k) => {
+    const f = FIELDS.find((f) => f.key === k);
+    const sectionHint = PURCHASE_FEE_SECTION_HINT[k];
+    return sectionHint ? `${f?.label[lang]}（${t[sectionHint]}）` : f?.label[lang];
+  }) as string[];
 
-  const summary: Array<{ id?: string; label: string; value: string; tone?: "pos" | "neg" }> = [
+  const runningCostLabels = RUNNING_COST_KEYS.map((k) => FIELDS.find((f) => f.key === k)?.label[lang]).filter(
+    (l): l is string => !!l,
+  );
+
+  const summary: Array<{ id?: string; label: string; value: string; tone?: "pos" | "neg"; info?: string[] }> = [
     { label: t.monthlyPayment, value: fmt(result.monthlyPayment) },
     { label: t.downPayment, value: fmt(downPayment) },
-    { id: "purchaseFees", label: t.purchaseFees, value: fmt(result.purchaseFees) },
+    { id: "purchaseFees", label: t.purchaseFees, value: fmt(result.purchaseFees), info: purchaseFeeLabels },
     { label: t.propertyValue, value: fmt(result.final.propertyValue) },
     { label: t.loanBalance, value: fmt(result.final.loanBalance) },
     { label: t.equity, value: fmt(result.final.equity) },
     { label: t.interestPaid, value: fmt(result.interestPaid) },
-    { label: t.runningCost, value: fmt(result.runningCost) },
+    { id: "runningCost", label: t.runningCost, value: fmt(result.runningCost), info: runningCostLabels },
     { label: t.loanTaxCredit, value: fmt(result.totalLoanTaxCredit), tone: "pos" },
     { label: t.sellFee, value: fmt(result.final.sellFee) },
     { label: t.net, value: fmt(result.final.net), tone: result.final.net >= 0 ? "pos" : "neg" },
@@ -553,21 +569,26 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
       <div className={styles.summaryGrid}>
         {summary.map((s) => (
           <div key={s.label} className={styles.tile}>
-            <span className={styles.tileLabelRow} ref={s.id === "purchaseFees" ? purchaseFeesInfoRef : undefined}>
+            <span
+              className={styles.tileLabelRow}
+              ref={(el) => {
+                if (s.id) infoRefs.current[s.id] = el;
+              }}
+            >
               <span className={styles.tileLabel}>{s.label}</span>
-              {s.id === "purchaseFees" && (
+              {s.info && (
                 <button
                   type="button"
                   className={styles.infoBtn}
-                  onClick={() => setPurchaseFeesInfoOpen((v) => !v)}
+                  onClick={() => setOpenInfoId((cur) => (cur === s.id ? null : (s.id ?? null)))}
                 >
                   ?
                 </button>
               )}
-              {s.id === "purchaseFees" && purchaseFeesInfoOpen && (
+              {s.info && openInfoId === s.id && (
                 <div className={styles.infoPopover}>
                   <ul className={styles.infoList}>
-                    {purchaseFeeLabels.map((l) => (
+                    {s.info.map((l) => (
                       <li key={l}>{l}</li>
                     ))}
                   </ul>
