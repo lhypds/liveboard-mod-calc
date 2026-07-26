@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TextArea from "@ui/TextArea";
-import { calcRealEstate, estimateBrokerFee, loanFeeAmount, type RealEstateInputs } from "./calc";
+import {
+  calcRealEstate,
+  estimateBrokerFee,
+  loanFeeAmount,
+  loanTaxCreditCap,
+  loanTaxCreditPeriod,
+  type RealEstateInputs,
+} from "./calc";
 import { config as defaultConfig } from "./config";
 import styles from "./calc.module.css";
 
@@ -10,7 +17,7 @@ type I18n = Record<Lang, string>;
 
 const DEFAULTS = defaultConfig.comp as RealEstateInputs;
 
-type NumberKey = Exclude<keyof RealEstateInputs, "propertyType">;
+type NumberKey = Exclude<keyof RealEstateInputs, "propertyType" | "housingCategory">;
 type Section = "basic" | "loan" | "contract" | "residence" | "sell";
 
 const FIELDS: Array<{
@@ -184,6 +191,12 @@ const LABELS: Record<Lang, Record<string, string>> = {
     propertyType: "Property type",
     new: "New build",
     used: "Used",
+    housingCategory: "Housing category",
+    housingCertified: "Certified long-life housing",
+    housingZeh: "ZEH-level energy-saving",
+    housingEnergySaving: "Energy-saving standard",
+    housingOther: "Other housing",
+    loanTaxCredit: "Loan tax credit",
   },
   ja: {
     inputs: "入力",
@@ -210,6 +223,12 @@ const LABELS: Record<Lang, Record<string, string>> = {
     propertyType: "物件種別",
     new: "新築",
     used: "中古",
+    housingCategory: "住宅区分",
+    housingCertified: "認定住宅等",
+    housingZeh: "ZEH水準省エネ住宅",
+    housingEnergySaving: "省エネ基準適合住宅",
+    housingOther: "その他の住宅",
+    loanTaxCredit: "住宅ローン控除",
   },
   zh: {
     inputs: "输入",
@@ -236,6 +255,12 @@ const LABELS: Record<Lang, Record<string, string>> = {
     propertyType: "房产类型",
     new: "新房",
     used: "存量房",
+    housingCategory: "住宅区分",
+    housingCertified: "认定住宅等",
+    housingZeh: "ZEH水准节能住宅",
+    housingEnergySaving: "节能基准适合住宅",
+    housingOther: "其他住宅",
+    loanTaxCredit: "住宅贷款抵扣",
   },
 };
 
@@ -245,6 +270,8 @@ function readInputs(comp: Record<string, unknown> | undefined): RealEstateInputs
     const v = comp?.[key];
     if (key === "propertyType") {
       if (v === "new" || v === "used") result.propertyType = v;
+    } else if (key === "housingCategory") {
+      if (v === "certified" || v === "zeh" || v === "energySaving" || v === "other") result.housingCategory = v;
     } else if (typeof v === "number" && Number.isFinite(v)) {
       result[key] = v;
     }
@@ -403,6 +430,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     { label: t.equity, value: fmt(result.final.equity) },
     { label: t.interestPaid, value: fmt(result.interestPaid) },
     { label: t.runningCost, value: fmt(result.runningCost) },
+    { label: t.loanTaxCredit, value: fmt(result.totalLoanTaxCredit), tone: "pos" },
     { label: t.sellFee, value: fmt(result.final.sellFee) },
     { label: t.net, value: fmt(result.final.net), tone: result.final.net >= 0 ? "pos" : "neg" },
   ];
@@ -482,7 +510,32 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
       </div>
 
       <div className={styles.sectionTitle}>{t.loanSection}</div>
-      <div className={styles.inputGrid}>{FIELDS.filter((f) => f.section === "loan").map(renderField)}</div>
+      <div className={styles.inputGrid}>
+        <label className={styles.field}>
+          <span className={styles.fieldLabelRow}>
+            <span className={styles.fieldLabel}>{t.housingCategory}</span>
+            <span className={styles.fieldHint}>
+              {fmt(loanTaxCreditCap(values.propertyType, values.housingCategory))}
+              {lang === "en" ? " man-yen / " : "万円・"}
+              {loanTaxCreditPeriod(values.propertyType)}
+              {lang === "en" ? " yr" : "年"}
+            </span>
+          </span>
+          <span className={styles.inputWrap}>
+            <select
+              className={styles.input}
+              value={values.housingCategory}
+              onChange={(e) => saveComp({ ...comp, housingCategory: e.target.value })}
+            >
+              <option value="certified">{t.housingCertified}</option>
+              <option value="zeh">{t.housingZeh}</option>
+              <option value="energySaving">{t.housingEnergySaving}</option>
+              <option value="other">{t.housingOther}</option>
+            </select>
+          </span>
+        </label>
+        {FIELDS.filter((f) => f.section === "loan").map(renderField)}
+      </div>
 
       <div className={styles.sectionTitle}>{t.contractFees}</div>
       <div className={styles.inputGrid}>{FIELDS.filter((f) => f.section === "contract").map(renderField)}</div>
@@ -539,6 +592,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
               <th>{t.equity}</th>
               <th>{t.cashOut}</th>
               <th>{t.sellFee}</th>
+              <th>{t.loanTaxCredit}</th>
               <th>{t.net}</th>
             </tr>
           </thead>
@@ -560,6 +614,9 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
                 </td>
                 <td>
                   <NumCell v={r.sellFee} />
+                </td>
+                <td>
+                  <NumCell v={r.loanTaxCredit} />
                 </td>
                 <td className={r.net >= 0 ? styles.pos : styles.neg}>
                   <NumCell v={r.net} />

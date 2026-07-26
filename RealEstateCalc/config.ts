@@ -34,6 +34,14 @@ export const config = {
             zh: "新房：不计购入中介费。存量房：不计修缮积立基金（仍需支付日常修缮费）。",
           },
         },
+        {
+          key: { en: "Loan tax credit", ja: "住宅ローン控除", zh: "住宅贷款抵扣" },
+          value: {
+            en: "Theoretical estimate only (year-end loan balance × 0.7%, capped by housing category; new-build runs 13 yrs, used runs 10 yrs). Does not check against actual income/resident tax owed since annual income isn't part of this calculator.",
+            ja: "理論値の試算です（年末残高×0.7%、住宅区分により上限あり。新築13年・中古10年）。年収を入力しないため、実際の所得税・住民税額による上限は考慮していません。",
+            zh: "仅为理论估算（年末贷款余额×0.7%，按住宅区分设上限；新房13年、存量房10年）。由于本工具未采集年收入，未考虑实际所得税・住民税额度上限。",
+          },
+        },
       ],
     },
   ],
@@ -64,5 +72,7 @@ export const config = {
     years: 10, // 保有年数
     // "new" (新築) | "used" (中古)
     propertyType: "used",
+    // "certified" (認定住宅等) | "zeh" (ZEH水準省エネ住宅) | "energySaving" (省エネ基準適合住宅) | "other" (その他の住宅)
+    housingCategory: "energySaving",
   },
 };

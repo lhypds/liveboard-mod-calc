@@ -18,6 +18,8 @@ export type RealEstateInputs = {
   years: number;
   // "new" (新築、仲介手数料なし) | "used" (中古、修繕積立基金なし)
   propertyType: "new" | "used";
+  // 住宅ローン控除の対象区分 (借入限度額の判定に使用)
+  housingCategory: "certified" | "zeh" | "energySaving" | "other";
 };
 
 export type YearRow = {
@@ -27,6 +29,7 @@ export type YearRow = {
   equity: number;
   totalCashOut: number;
   sellFee: number;
+  loanTaxCredit: number;
   net: number;
 };
 
@@ -37,7 +40,24 @@ export type RealEstateResult = {
   final: YearRow;
   interestPaid: number;
   runningCost: number;
+  totalLoanTaxCredit: number;
 };
+
+// 住宅ローン控除の借入限度額 (万円、現行制度)。既存住宅はいずれの区分も控除期間10年。
+const LOAN_TAX_CREDIT_CAPS: Record<RealEstateInputs["propertyType"], Record<RealEstateInputs["housingCategory"], number>> = {
+  new: { certified: 4500, zeh: 3500, energySaving: 3000, other: 0 },
+  used: { certified: 3000, zeh: 3000, energySaving: 3000, other: 2000 },
+};
+
+const LOAN_TAX_CREDIT_RATE = 0.007; // 控除率 0.7%
+
+export function loanTaxCreditCap(propertyType: RealEstateInputs["propertyType"], category: RealEstateInputs["housingCategory"]): number {
+  return LOAN_TAX_CREDIT_CAPS[propertyType][category];
+}
+
+export function loanTaxCreditPeriod(propertyType: RealEstateInputs["propertyType"]): number {
+  return propertyType === "new" ? 13 : 10;
+}
 
 // Standard Japan real estate agent fee: (price × 3% + 6万円) × 1.1 (10% consumption tax)
 export function estimateBrokerFee(price: number): number {
@@ -88,19 +108,25 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
   const payment = monthlyLoanPayment(input.loanAmount, input.interestRate, input.loanYears);
   const totalMonths = Math.max(1, Math.round(input.loanYears * 12));
   const years = Math.max(1, Math.round(input.years));
+  const creditCap = loanTaxCreditCap(input.propertyType, input.housingCategory);
+  const creditPeriod = loanTaxCreditPeriod(input.propertyType);
 
   const rows: YearRow[] = [];
+  let cumulativeLoanTaxCredit = 0;
   for (let y = 1; y <= years; y++) {
     const monthsPaid = Math.min(y * 12, totalMonths);
     const loanBalance = loanBalanceAfter(input.loanAmount, input.interestRate, input.loanYears, monthsPaid, payment);
     const propertyValue = input.price * Math.pow(1 + input.appreciationRate / 100, y);
     const paymentsMade = payment * monthsPaid;
     const runningCost = (input.propertyTaxYearly + maintenanceYearly + input.otherFeesYearly) * y;
-    const totalCashOut = downPayment + purchaseFees + paymentsMade + runningCost;
+    const loanTaxCredit = y <= creditPeriod ? Math.min(loanBalance, creditCap) * LOAN_TAX_CREDIT_RATE : 0;
+    cumulativeLoanTaxCredit += loanTaxCredit;
+    // Cash out net of the loan tax credit received back over the years so far
+    const totalCashOut = downPayment + purchaseFees + paymentsMade + runningCost - cumulativeLoanTaxCredit;
     const equity = propertyValue - loanBalance;
     // Net position if sold at end of year y, after the selling broker fee
     const net = propertyValue - loanBalance - totalCashOut - input.sellFee;
-    rows.push({ year: y, propertyValue, loanBalance, equity, totalCashOut, sellFee: input.sellFee, net });
+    rows.push({ year: y, propertyValue, loanBalance, equity, totalCashOut, sellFee: input.sellFee, loanTaxCredit, net });
   }
 
   const final = rows[rows.length - 1];
@@ -108,6 +134,7 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
   const principalRepaid = input.loanAmount - final.loanBalance;
   const interestPaid = payment * monthsPaid - principalRepaid;
   const runningCost = (input.propertyTaxYearly + maintenanceYearly + input.otherFeesYearly) * years;
+  const totalLoanTaxCredit = rows.reduce((sum, r) => sum + r.loanTaxCredit, 0);
 
-  return { monthlyPayment: payment, purchaseFees, rows, final, interestPaid, runningCost };
+  return { monthlyPayment: payment, purchaseFees, rows, final, interestPaid, runningCost, totalLoanTaxCredit };
 }
