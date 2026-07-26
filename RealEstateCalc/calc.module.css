@@ -43,12 +43,31 @@
   cursor: not-allowed;
 }
 
+.fieldLabelRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  height: 14px;
+}
+
 .fieldLabel {
   font-size: 10px;
   line-height: 14px;
   height: 14px;
   flex-shrink: 0;
   color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fieldHint {
+  margin-left: auto;
+  font-size: 10px;
+  line-height: 14px;
+  color: #94a3b8;
+  text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -224,6 +243,23 @@
 
 .table tbody tr:nth-child(even) {
   background: #f8fafc;
+}
+
+.numWrap {
+  display: flex;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.numInt {
+  flex: 1;
+  text-align: right;
+}
+
+.numFrac {
+  flex: 0 0 auto;
+  min-width: 2.2em;
+  text-align: left;
 }
 
 .table th:first-child,

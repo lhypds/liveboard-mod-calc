@@ -58,7 +58,7 @@ function decimalsFor(code: string) {
 
 function fmt(v: number, code: string): string {
   const d = decimalsFor(code);
-  return v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  return v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: d });
 }
 
 export default function CurrencyCalc({ config }: { config: Record<string, unknown> }) {
@@ -114,9 +114,10 @@ export default function CurrencyCalc({ config }: { config: Record<string, unknow
   }
 
   function handleChange(code: string, raw: string) {
-    setRawInput(raw);
-    const num = Number(raw);
-    if (raw.trim() === "" || !Number.isFinite(num)) return;
+    const cleared = raw.trim() === "";
+    setRawInput(cleared ? "0" : raw);
+    const num = cleared ? 0 : Number(raw);
+    if (!Number.isFinite(num)) return;
     save?.({ ...comp, baseCode: code, amount: num });
   }
 

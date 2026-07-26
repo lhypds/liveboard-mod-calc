@@ -3,13 +3,16 @@ export type RealEstateInputs = {
   loanAmount: number;
   interestRate: number;
   loanYears: number;
+  loanFeeRate: number;
+  loanOtherFees: number;
   brokerFee: number;
   registrationFee: number;
   acquisitionTax: number;
   otherFees: number;
   repairReserveFund: number;
   propertyTaxYearly: number;
-  maintenanceYearly: number;
+  maintenanceMonthly: number;
+  otherFeesYearly: number;
   appreciationRate: number;
   sellFee: number;
   years: number;
@@ -41,6 +44,10 @@ export function estimateBrokerFee(price: number): number {
   return Math.round((price * 0.03 + 6) * 1.1 * 100) / 100;
 }
 
+export function loanFeeAmount(loanAmount: number, ratePct: number): number {
+  return Math.round(((loanAmount * ratePct) / 100) * 100) / 100;
+}
+
 export function monthlyLoanPayment(loan: number, annualRatePct: number, years: number): number {
   const n = Math.max(1, Math.round(years * 12));
   const r = annualRatePct / 100 / 12;
@@ -64,11 +71,19 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
   // New-build purchases go direct from the developer (no buy-side broker fee).
   // The repair reserve fund (修繕積立基金) is a one-time founding contribution
   // collected only from first (new-build) buyers; used-home buyers don't pay it,
-  // but still pay the ongoing maintenance/repair reserve (maintenanceYearly).
+  // but still pay the ongoing monthly maintenance/repair reserve (maintenanceMonthly).
   const brokerFee = input.propertyType === "new" ? 0 : input.brokerFee;
   const repairReserveFund = input.propertyType === "used" ? 0 : input.repairReserveFund;
+  const maintenanceYearly = input.maintenanceMonthly * 12;
 
-  const purchaseFees = brokerFee + input.registrationFee + input.acquisitionTax + input.otherFees + repairReserveFund;
+  const purchaseFees =
+    brokerFee +
+    input.registrationFee +
+    input.acquisitionTax +
+    input.otherFees +
+    repairReserveFund +
+    loanFeeAmount(input.loanAmount, input.loanFeeRate) +
+    input.loanOtherFees;
   const downPayment = Math.max(0, input.price - input.loanAmount);
   const payment = monthlyLoanPayment(input.loanAmount, input.interestRate, input.loanYears);
   const totalMonths = Math.max(1, Math.round(input.loanYears * 12));
@@ -80,7 +95,7 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
     const loanBalance = loanBalanceAfter(input.loanAmount, input.interestRate, input.loanYears, monthsPaid, payment);
     const propertyValue = input.price * Math.pow(1 + input.appreciationRate / 100, y);
     const paymentsMade = payment * monthsPaid;
-    const runningCost = (input.propertyTaxYearly + input.maintenanceYearly) * y;
+    const runningCost = (input.propertyTaxYearly + maintenanceYearly + input.otherFeesYearly) * y;
     const totalCashOut = downPayment + purchaseFees + paymentsMade + runningCost;
     const equity = propertyValue - loanBalance;
     // Net position if sold at end of year y, after the selling broker fee
@@ -92,7 +107,7 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
   const monthsPaid = Math.min(years * 12, totalMonths);
   const principalRepaid = input.loanAmount - final.loanBalance;
   const interestPaid = payment * monthsPaid - principalRepaid;
-  const runningCost = (input.propertyTaxYearly + input.maintenanceYearly) * years;
+  const runningCost = (input.propertyTaxYearly + maintenanceYearly + input.otherFeesYearly) * years;
 
   return { monthlyPayment: payment, purchaseFees, rows, final, interestPaid, runningCost };
 }

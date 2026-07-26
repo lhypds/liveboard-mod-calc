@@ -119,8 +119,22 @@ function toDraft(values: StockInputs): Record<string, string> {
   return Object.fromEntries(FIELDS.map((f) => [f.key, String(values[f.key])]));
 }
 
-function fmt(v: number, digits = 0): string {
-  return v.toLocaleString("ja-JP", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+function fmt(v: number): string {
+  return v.toLocaleString("ja-JP", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+// Split into integer/fraction so a fixed-width fraction column keeps decimal points aligned down a table column
+function NumCell({ v }: { v: number }) {
+  const s = fmt(v);
+  const i = s.indexOf(".");
+  const intPart = i === -1 ? s : s.slice(0, i);
+  const fracPart = i === -1 ? "" : s.slice(i);
+  return (
+    <span className={styles.numWrap}>
+      <span className={styles.numInt}>{intPart}</span>
+      <span className={styles.numFrac}>{fracPart}</span>
+    </span>
+  );
 }
 
 export default function StockCalc({ config }: { config: Record<string, unknown> }) {
@@ -150,9 +164,10 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
   }
 
   function handleChange(key: NumberKey, raw: string) {
-    setDraft((prev) => ({ ...prev, [key]: raw }));
-    const num = Number(raw);
-    if (raw.trim() === "" || !Number.isFinite(num)) return;
+    const cleared = raw.trim() === "";
+    setDraft((prev) => ({ ...prev, [key]: cleared ? "0" : raw }));
+    const num = cleared ? 0 : Number(raw);
+    if (!Number.isFinite(num)) return;
     saveComp({ ...comp, [key]: num });
   }
 
@@ -253,10 +268,18 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
             {result.rows.map((r) => (
               <tr key={r.year}>
                 <td>{r.year}</td>
-                <td>{fmt(r.principal)}</td>
-                <td>{fmt(r.value)}</td>
-                <td className={r.gain >= 0 ? styles.pos : styles.neg}>{fmt(r.gain)}</td>
-                <td>{fmt(r.afterTax)}</td>
+                <td>
+                  <NumCell v={r.principal} />
+                </td>
+                <td>
+                  <NumCell v={r.value} />
+                </td>
+                <td className={r.gain >= 0 ? styles.pos : styles.neg}>
+                  <NumCell v={r.gain} />
+                </td>
+                <td>
+                  <NumCell v={r.afterTax} />
+                </td>
               </tr>
             ))}
           </tbody>

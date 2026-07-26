@@ -49,13 +49,16 @@ export const config = {
     loanAmount: 4500, // 借入額
     interestRate: 0.7, // 金利 (%/年)
     loanYears: 35, // 返済期間 (年)
+    loanFeeRate: 2.2, // 融資事務手数料率 (%、借入額に対して)
+    loanOtherFees: 3, // 融資関連その他費用（印紙代・登記関連など）
     brokerFee: 172, // 仲介手数料
     registrationFee: 50, // 登記費用
     acquisitionTax: 50, // 不動産取得税
-    otherFees: 30, // 印紙税・融資手数料など
+    otherFees: 30, // 印紙税など
     repairReserveFund: 20, // 修繕積立基金（新築時のみ）
     propertyTaxYearly: 15, // 固定資産税・都市計画税 (万円/年)
-    maintenanceYearly: 36, // 管理費・修繕積立金 (万円/年)
+    maintenanceMonthly: 3, // 管理費・修繕積立金 (万円/月)
+    otherFeesYearly: 0, // その他諸費用 (万円/年)
     appreciationRate: 0, // 価格変動率 (%/年)
     sellFee: 171.6, // 売却時仲介手数料 = (物件価格 x 3% + 6万円) x 1.1
     years: 10, // 保有年数

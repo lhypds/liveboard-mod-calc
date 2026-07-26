@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TextArea from "@ui/TextArea";
-import { calcRealEstate, estimateBrokerFee, type RealEstateInputs } from "./calc";
+import { calcRealEstate, estimateBrokerFee, loanFeeAmount, type RealEstateInputs } from "./calc";
 import { config as defaultConfig } from "./config";
 import styles from "./calc.module.css";
 
@@ -11,7 +11,7 @@ type I18n = Record<Lang, string>;
 const DEFAULTS = defaultConfig.comp as RealEstateInputs;
 
 type NumberKey = Exclude<keyof RealEstateInputs, "propertyType">;
-type Section = "basic" | "contract" | "residence" | "sell";
+type Section = "basic" | "loan" | "contract" | "residence" | "sell";
 
 const FIELDS: Array<{
   key: NumberKey;
@@ -20,6 +20,7 @@ const FIELDS: Array<{
   unit: I18n;
   step: number;
   disabledWhen?: (values: RealEstateInputs) => boolean;
+  hint?: (values: RealEstateInputs, lang: Lang) => string;
 }> = [
   {
     key: "price",
@@ -27,27 +28,6 @@ const FIELDS: Array<{
     label: { en: "Property price", ja: "物件価格", zh: "房产价格" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 10,
-  },
-  {
-    key: "loanAmount",
-    section: "basic",
-    label: { en: "Loan amount", ja: "借入額", zh: "贷款金额" },
-    unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 10,
-  },
-  {
-    key: "interestRate",
-    section: "basic",
-    label: { en: "Interest rate", ja: "金利", zh: "利率" },
-    unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
-    step: 0.1,
-  },
-  {
-    key: "loanYears",
-    section: "basic",
-    label: { en: "Loan term", ja: "返済期間", zh: "还款年限" },
-    unit: { en: "yr", ja: "年", zh: "年" },
-    step: 1,
   },
   {
     key: "appreciationRate",
@@ -61,6 +41,42 @@ const FIELDS: Array<{
     section: "basic",
     label: { en: "Holding years", ja: "保有年数", zh: "持有年数" },
     unit: { en: "yr", ja: "年", zh: "年" },
+    step: 1,
+  },
+  {
+    key: "loanAmount",
+    section: "loan",
+    label: { en: "Loan amount", ja: "借入額", zh: "贷款金额" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 10,
+  },
+  {
+    key: "interestRate",
+    section: "loan",
+    label: { en: "Interest rate", ja: "金利", zh: "利率" },
+    unit: { en: "%/yr", ja: "%/年", zh: "%/年" },
+    step: 0.1,
+  },
+  {
+    key: "loanYears",
+    section: "loan",
+    label: { en: "Loan term", ja: "返済期間", zh: "还款年限" },
+    unit: { en: "yr", ja: "年", zh: "年" },
+    step: 1,
+  },
+  {
+    key: "loanFeeRate",
+    section: "loan",
+    label: { en: "Loan handling fee", ja: "融資事務手数料", zh: "贷款手续费" },
+    unit: { en: "%", ja: "%", zh: "%" },
+    step: 0.1,
+    hint: (v, lang) => `${fmt(loanFeeAmount(v.loanAmount, v.loanFeeRate))}${lang === "en" ? " man-yen" : "万円"}`,
+  },
+  {
+    key: "loanOtherFees",
+    section: "loan",
+    label: { en: "Other fees", ja: "その他諸費用", zh: "其他费用" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 1,
   },
   {
@@ -108,9 +124,17 @@ const FIELDS: Array<{
     step: 1,
   },
   {
-    key: "maintenanceYearly",
+    key: "maintenanceMonthly",
     section: "residence",
-    label: { en: "Maintenance / yr", ja: "管理・修繕（年）", zh: "管理・修缮（年）" },
+    label: { en: "Maintenance / mo", ja: "管理・修繕（月）", zh: "管理・修缮（月）" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+    hint: (v, lang) => `${fmt(v.maintenanceMonthly * 12)}${lang === "en" ? " man-yen/yr" : "万円/年"}`,
+  },
+  {
+    key: "otherFeesYearly",
+    section: "residence",
+    label: { en: "Other fees / yr", ja: "その他諸費用（年）", zh: "其他费用（年）" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 1,
   },
@@ -126,6 +150,7 @@ const FIELDS: Array<{
 const LABELS: Record<Lang, Record<string, string>> = {
   en: {
     inputs: "Inputs",
+    loanSection: "Loan",
     contractFees: "Contract-time fees",
     residenceFees: "Residence-time fees",
     sellFees: "Sell-time fees",
@@ -151,6 +176,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
   },
   ja: {
     inputs: "入力",
+    loanSection: "ローン",
     contractFees: "契約時費用",
     residenceFees: "住居時費用",
     sellFees: "売却時費用",
@@ -176,6 +202,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
   },
   zh: {
     inputs: "输入",
+    loanSection: "贷款",
     contractFees: "签约费用",
     residenceFees: "居住费用",
     sellFees: "售出费用",
@@ -226,8 +253,22 @@ function readNoteHeight(comp: Record<string, unknown> | undefined): number | und
   return typeof comp?.noteHeight === "number" ? comp.noteHeight : undefined;
 }
 
-function fmt(v: number, digits = 0): string {
-  return v.toLocaleString("ja-JP", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+function fmt(v: number): string {
+  return v.toLocaleString("ja-JP", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+// Split into integer/fraction so a fixed-width fraction column keeps decimal points aligned down a table column
+function NumCell({ v }: { v: number }) {
+  const s = fmt(v);
+  const i = s.indexOf(".");
+  const intPart = i === -1 ? s : s.slice(0, i);
+  const fracPart = i === -1 ? "" : s.slice(i);
+  return (
+    <span className={styles.numWrap}>
+      <span className={styles.numInt}>{intPart}</span>
+      <span className={styles.numFrac}>{fracPart}</span>
+    </span>
+  );
 }
 
 export default function RealEstateCalc({ config }: { config: Record<string, unknown> }) {
@@ -289,9 +330,10 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
   }
 
   function handleChange(key: NumberKey, raw: string) {
-    setDraft((prev) => ({ ...prev, [key]: raw }));
-    const num = Number(raw);
-    if (raw.trim() === "" || !Number.isFinite(num)) return;
+    const cleared = raw.trim() === "";
+    setDraft((prev) => ({ ...prev, [key]: cleared ? "0" : raw }));
+    const num = cleared ? 0 : Number(raw);
+    if (!Number.isFinite(num)) return;
     const next: Record<string, unknown> = { ...comp, [key]: num };
     if (key === "price") {
       const sellFee = estimateBrokerFee(num);
@@ -299,6 +341,16 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
       setDraft((prev) => ({ ...prev, sellFee: String(sellFee) }));
     }
     saveComp(next);
+  }
+
+  function handlePropertyTypeChange(next: "new" | "used") {
+    const patch: Record<string, unknown> = { ...comp, propertyType: next };
+    const clearedKey: NumberKey | null = next === "new" ? "brokerFee" : next === "used" ? "repairReserveFund" : null;
+    if (clearedKey) {
+      patch[clearedKey] = 0;
+      setDraft((prev) => ({ ...prev, [clearedKey]: "0" }));
+    }
+    saveComp(patch);
   }
 
   function handleStep(key: NumberKey, step: number) {
@@ -312,7 +364,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
   const downPayment = Math.max(0, values.price - values.loanAmount);
 
   const summary: Array<{ label: string; value: string; tone?: "pos" | "neg" }> = [
-    { label: t.monthlyPayment, value: `${fmt(result.monthlyPayment, 2)}` },
+    { label: t.monthlyPayment, value: fmt(result.monthlyPayment) },
     { label: t.downPayment, value: fmt(downPayment) },
     { label: t.purchaseFees, value: fmt(result.purchaseFees) },
     { label: t.propertyValue, value: fmt(result.final.propertyValue) },
@@ -328,7 +380,10 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     const disabled = f.disabledWhen?.(values) ?? false;
     return (
       <label key={f.key} className={`${styles.field} ${disabled ? styles.fieldDisabled : ""}`}>
-        <span className={styles.fieldLabel}>{f.label[lang]}</span>
+        <span className={styles.fieldLabelRow}>
+          <span className={styles.fieldLabel}>{f.label[lang]}</span>
+          {f.hint && <span className={styles.fieldHint}>{f.hint(values, lang)}</span>}
+        </span>
         <span className={styles.inputWrap}>
           <input
             type="number"
@@ -385,7 +440,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
             <select
               className={styles.input}
               value={values.propertyType}
-              onChange={(e) => saveComp({ ...comp, propertyType: e.target.value })}
+              onChange={(e) => handlePropertyTypeChange(e.target.value as "new" | "used")}
             >
               <option value="new">{t.new}</option>
               <option value="used">{t.used}</option>
@@ -394,6 +449,9 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
         </label>
         {FIELDS.filter((f) => f.section === "basic").map(renderField)}
       </div>
+
+      <div className={styles.sectionTitle}>{t.loanSection}</div>
+      <div className={styles.inputGrid}>{FIELDS.filter((f) => f.section === "loan").map(renderField)}</div>
 
       <div className={styles.sectionTitle}>{t.contractFees}</div>
       <div className={styles.inputGrid}>{FIELDS.filter((f) => f.section === "contract").map(renderField)}</div>
@@ -437,12 +495,24 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
             {result.rows.map((r) => (
               <tr key={r.year}>
                 <td>{r.year}</td>
-                <td>{fmt(r.propertyValue)}</td>
-                <td>{fmt(r.loanBalance)}</td>
-                <td>{fmt(r.equity)}</td>
-                <td>{fmt(r.totalCashOut)}</td>
-                <td>{fmt(r.sellFee)}</td>
-                <td className={r.net >= 0 ? styles.pos : styles.neg}>{fmt(r.net)}</td>
+                <td>
+                  <NumCell v={r.propertyValue} />
+                </td>
+                <td>
+                  <NumCell v={r.loanBalance} />
+                </td>
+                <td>
+                  <NumCell v={r.equity} />
+                </td>
+                <td>
+                  <NumCell v={r.totalCashOut} />
+                </td>
+                <td>
+                  <NumCell v={r.sellFee} />
+                </td>
+                <td className={r.net >= 0 ? styles.pos : styles.neg}>
+                  <NumCell v={r.net} />
+                </td>
               </tr>
             ))}
           </tbody>
