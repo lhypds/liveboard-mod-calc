@@ -39,7 +39,7 @@ export const config = {
   ],
   x: 0,
   y: 0,
-  w: 40,
+  w: 36,
   h: 36,
   minW: 20,
   minH: 20,
