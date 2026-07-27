@@ -15,6 +15,8 @@ export type RealEstateInputs = {
   otherFeesYearly: number;
   appreciationRate: number;
   sellFee: number;
+  sellTax: number;
+  sellOtherFees: number;
   years: number;
   // "new" (新築、仲介手数料なし) | "used" (中古、修繕積立基金なし)
   propertyType: "new" | "used";
@@ -28,7 +30,7 @@ export type YearRow = {
   loanBalance: number;
   equity: number;
   totalCashOut: number;
-  sellFee: number;
+  sellCosts: number;
   loanTaxCredit: number;
   net: number;
 };
@@ -110,6 +112,7 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
   const years = Math.max(1, Math.round(input.years));
   const creditCap = loanTaxCreditCap(input.propertyType, input.housingCategory);
   const creditPeriod = loanTaxCreditPeriod(input.propertyType);
+  const sellCosts = input.sellFee + input.sellTax + input.sellOtherFees;
 
   const rows: YearRow[] = [];
   let cumulativeLoanTaxCredit = 0;
@@ -124,9 +127,9 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
     // Cash out net of the loan tax credit received back over the years so far
     const totalCashOut = downPayment + purchaseFees + paymentsMade + runningCost - cumulativeLoanTaxCredit;
     const equity = propertyValue - loanBalance;
-    // Net position if sold at end of year y, after the selling broker fee
-    const net = propertyValue - loanBalance - totalCashOut - input.sellFee;
-    rows.push({ year: y, propertyValue, loanBalance, equity, totalCashOut, sellFee: input.sellFee, loanTaxCredit, net });
+    // Net position if sold at end of year y, after the selling broker fee, sell-time tax, and other sell fees
+    const net = propertyValue - loanBalance - totalCashOut - sellCosts;
+    rows.push({ year: y, propertyValue, loanBalance, equity, totalCashOut, sellCosts, loanTaxCredit, net });
   }
 
   const final = rows[rows.length - 1];

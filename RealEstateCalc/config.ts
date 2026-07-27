@@ -69,6 +69,8 @@ export const config = {
     otherFeesYearly: 0, // その他諸費用 (万円/年)
     appreciationRate: 0, // 価格変動率 (%/年)
     sellFee: 171.6, // 売却時仲介手数料 = (物件価格 x 3% + 6万円) x 1.1
+    sellTax: 0, // 譲渡所得税など
+    sellOtherFees: 0, // 売却時その他諸費用
     years: 10, // 保有年数
     // "new" (新築) | "used" (中古)
     propertyType: "used",

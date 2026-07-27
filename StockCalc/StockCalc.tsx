@@ -61,6 +61,8 @@ const LABELS: Record<Lang, Record<string, string>> = {
     principal: "Principal",
     gain: "Gain",
     tax: "Tax",
+    taxInfo1: "Tax = max(0, value − principal) × 20.315%",
+    taxInfo2: "Applies only to the taxable portion; NISA is tax-free, overflow beyond the cap is taxed",
     afterTaxGain: "After-tax gain",
     afterTax: "Value after tax",
     year: "Yr",
@@ -76,6 +78,8 @@ const LABELS: Record<Lang, Record<string, string>> = {
     principal: "元本",
     gain: "運用益",
     tax: "税金",
+    taxInfo1: "税金 = max(0, 評価額－元本) × 20.315%",
+    taxInfo2: "課税口座部分のみに適用。NISAは非課税、枠超過分は課税",
     afterTaxGain: "税引後利益",
     afterTax: "税引後残高",
     year: "年",
@@ -91,6 +95,9 @@ const LABELS: Record<Lang, Record<string, string>> = {
     principal: "本金",
     gain: "收益",
     tax: "税金",
+    taxInfo1: "税金 = max(0, 市值－本金) × 20.315%",
+    taxInfo2: "仅对应税部分计算；NISA免税，超出NISA额度部分按应税计算",
+    afterTaxGain: "税后收益",
     afterTax: "税后剩余价值",
     year: "年",
     value: "市值",
@@ -149,6 +156,20 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
 
   const values = readInputs(comp);
   const [draft, setDraft] = useState<Record<string, string>>(() => toDraft(values));
+  const [openInfoId, setOpenInfoId] = useState<string | null>(null);
+  const infoRefs = useRef<Record<string, HTMLSpanElement | null>>({});
+
+  useEffect(() => {
+    if (!openInfoId) return;
+    function handleClickOutside(e: MouseEvent) {
+      const el = infoRefs.current[openInfoId as string];
+      if (el && !el.contains(e.target as Node)) {
+        setOpenInfoId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openInfoId]);
 
   // Sync when comp changes from outside (e.g. import/restore, edit modal)
   const lastSavedRef = useRef(JSON.stringify(values));
@@ -181,12 +202,14 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
   }
 
   const result = calcStock(values);
+  const afterTaxGain = result.final.afterTax - result.final.principal;
 
-  const summary: Array<{ label: string; value: string; tone?: "pos" | "neg" }> = [
+  const summary: Array<{ id?: string; label: string; value: string; tone?: "pos" | "neg"; info?: string[] }> = [
     { label: t.principal, value: fmt(result.final.principal) },
     { label: t.finalValue, value: fmt(result.final.value) },
     { label: t.gain, value: fmt(result.final.gain), tone: result.final.gain >= 0 ? "pos" : "neg" },
-    { label: t.tax, value: fmt(result.tax) },
+    { id: "tax", label: t.tax, value: fmt(result.tax), info: [t.taxInfo1, t.taxInfo2] },
+    { label: t.afterTaxGain, value: fmt(afterTaxGain), tone: afterTaxGain >= 0 ? "pos" : "neg" },
     {
       label: t.afterTax,
       value: fmt(result.final.afterTax),
@@ -246,7 +269,32 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
       <div className={styles.summaryGrid}>
         {summary.map((s) => (
           <div key={s.label} className={styles.tile}>
-            <span className={styles.tileLabel}>{s.label}</span>
+            <span
+              className={styles.tileLabelRow}
+              ref={(el) => {
+                if (s.id) infoRefs.current[s.id] = el;
+              }}
+            >
+              <span className={styles.tileLabel}>{s.label}</span>
+              {s.info && (
+                <button
+                  type="button"
+                  className={styles.infoBtn}
+                  onClick={() => setOpenInfoId((cur) => (cur === s.id ? null : (s.id ?? null)))}
+                >
+                  ?
+                </button>
+              )}
+              {s.info && openInfoId === s.id && (
+                <div className={styles.infoPopover}>
+                  <ul className={styles.infoList}>
+                    {s.info.map((l) => (
+                      <li key={l}>{l}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </span>
             <span className={`${styles.tileValue} ${s.tone === "pos" ? styles.pos : ""} ${s.tone === "neg" ? styles.neg : ""}`}>
               {s.value}
               <span className={styles.tileUnit}>{lang === "en" ? "" : "万円"}</span>
@@ -263,27 +311,34 @@ export default function StockCalc({ config }: { config: Record<string, unknown> 
               <th>{t.principal}</th>
               <th>{t.value}</th>
               <th>{t.gain}</th>
+              <th>{t.afterTaxGain}</th>
               <th>{t.afterTax}</th>
             </tr>
           </thead>
           <tbody>
-            {result.rows.map((r) => (
-              <tr key={r.year}>
-                <td>{r.year}</td>
-                <td>
-                  <NumCell v={r.principal} />
-                </td>
-                <td>
-                  <NumCell v={r.value} />
-                </td>
-                <td className={r.gain >= 0 ? styles.pos : styles.neg}>
-                  <NumCell v={r.gain} />
-                </td>
-                <td>
-                  <NumCell v={r.afterTax} />
-                </td>
-              </tr>
-            ))}
+            {result.rows.map((r) => {
+              const rowAfterTaxGain = r.afterTax - r.principal;
+              return (
+                <tr key={r.year}>
+                  <td>{r.year}</td>
+                  <td>
+                    <NumCell v={r.principal} />
+                  </td>
+                  <td>
+                    <NumCell v={r.value} />
+                  </td>
+                  <td className={r.gain >= 0 ? styles.pos : styles.neg}>
+                    <NumCell v={r.gain} />
+                  </td>
+                  <td className={rowAfterTaxGain >= 0 ? styles.pos : styles.neg}>
+                    <NumCell v={rowAfterTaxGain} />
+                  </td>
+                  <td>
+                    <NumCell v={r.afterTax} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

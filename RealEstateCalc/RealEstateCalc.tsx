@@ -152,6 +152,20 @@ const FIELDS: Array<{
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
     step: 1,
   },
+  {
+    key: "sellTax",
+    section: "sell",
+    label: { en: "Sell-time tax", ja: "譲渡税等", zh: "税费" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+  },
+  {
+    key: "sellOtherFees",
+    section: "sell",
+    label: { en: "Other fees", ja: "その他諸費用", zh: "其他费用" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 1,
+  },
 ];
 
 // Field keys that flow into the "Purchase fees" summary total
@@ -174,6 +188,9 @@ const PURCHASE_FEE_SECTION_HINT: Partial<Record<NumberKey, "contractFees" | "loa
 // Field keys that flow into the "Running cost" summary total
 const RUNNING_COST_KEYS: NumberKey[] = ["propertyTaxYearly", "maintenanceMonthly", "otherFeesYearly"];
 
+// Field keys that flow into the "Sell costs" summary total
+const SELL_COST_KEYS: NumberKey[] = ["sellFee", "sellTax", "sellOtherFees"];
+
 const LABELS: Record<Lang, Record<string, string>> = {
   en: {
     inputs: "Inputs",
@@ -191,7 +208,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     equity: "Equity",
     interestPaid: "Interest paid",
     runningCost: "Running cost",
-    sellFee: "Sell fee",
+    sellCosts: "Total sell costs",
     net: "Net if sold",
     year: "Yr",
     value: "Value",
@@ -223,7 +240,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     equity: "純資産",
     interestPaid: "支払利息",
     runningCost: "維持費累計",
-    sellFee: "売却手数料",
+    sellCosts: "売却費用合計",
     net: "売却時損益",
     year: "年",
     value: "物件価値",
@@ -255,7 +272,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     equity: "净资产",
     interestPaid: "已付利息",
     runningCost: "持有成本",
-    sellFee: "卖出手续费",
+    sellCosts: "售出费用合计",
     net: "出售时损益",
     year: "年",
     value: "房产价值",
@@ -437,6 +454,10 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     (l): l is string => !!l,
   );
 
+  const sellCostLabels = SELL_COST_KEYS.map((k) => FIELDS.find((f) => f.key === k)?.label[lang]).filter(
+    (l): l is string => !!l,
+  );
+
   const summary: Array<{ id?: string; label: string; value: string; tone?: "pos" | "neg"; info?: string[] }> = [
     { label: t.monthlyPayment, value: fmt(result.monthlyPayment) },
     { label: t.downPayment, value: fmt(downPayment) },
@@ -447,7 +468,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     { label: t.interestPaid, value: fmt(result.interestPaid) },
     { id: "runningCost", label: t.runningCost, value: fmt(result.runningCost), info: runningCostLabels },
     { label: t.loanTaxCredit, value: fmt(result.totalLoanTaxCredit), tone: "pos" },
-    { label: t.sellFee, value: fmt(result.final.sellFee) },
+    { id: "sellCosts", label: t.sellCosts, value: fmt(result.final.sellCosts), info: sellCostLabels },
     { label: t.net, value: fmt(result.final.net), tone: result.final.net >= 0 ? "pos" : "neg" },
   ];
 
@@ -612,7 +633,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
               <th>{t.loan}</th>
               <th>{t.equity}</th>
               <th>{t.cashOut}</th>
-              <th>{t.sellFee}</th>
+              <th>{t.sellCosts}</th>
               <th>{t.loanTaxCredit}</th>
               <th>{t.net}</th>
             </tr>
@@ -634,7 +655,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
                   <NumCell v={r.totalCashOut} />
                 </td>
                 <td>
-                  <NumCell v={r.sellFee} />
+                  <NumCell v={r.sellCosts} />
                 </td>
                 <td>
                   <NumCell v={r.loanTaxCredit} />
