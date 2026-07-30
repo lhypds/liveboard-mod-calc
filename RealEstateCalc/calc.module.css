@@ -94,6 +94,11 @@
   outline: none;
 }
 
+/* An empty box means 0 - the placeholder spells that out */
+.input::placeholder {
+  color: #94a3b8;
+}
+
 .input::-webkit-outer-spin-button,
 .input::-webkit-inner-spin-button {
   -webkit-appearance: none;

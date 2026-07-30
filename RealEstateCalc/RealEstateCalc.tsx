@@ -408,9 +408,10 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
   }
 
   function handleChange(key: NumberKey, raw: string) {
-    const cleared = raw.trim() === "";
-    setDraft((prev) => ({ ...prev, [key]: cleared ? "0" : raw }));
-    const num = cleared ? 0 : Number(raw);
+    // Keep the box literally empty while editing (backspacing to nothing must stay nothing);
+    // an empty box counts as 0 in the calc, and the placeholder shows that 0.
+    setDraft((prev) => ({ ...prev, [key]: raw }));
+    const num = raw.trim() === "" ? 0 : Number(raw);
     if (!Number.isFinite(num)) return;
     const next: Record<string, unknown> = { ...comp, [key]: num };
     if (key === "price") {
@@ -484,6 +485,7 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
           <input
             type="number"
             className={styles.input}
+            placeholder="0"
             value={draft[f.key] ?? ""}
             disabled={disabled}
             onChange={(e) => handleChange(f.key, e.target.value)}

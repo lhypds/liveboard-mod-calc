@@ -61,6 +61,11 @@
   border-color: #000;
 }
 
+/* An empty box means 0 - the placeholder spells that out */
+.input::placeholder {
+  color: #94a3b8;
+}
+
 .removeBtn {
   flex-shrink: 0;
   display: flex;

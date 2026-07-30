@@ -107,16 +107,21 @@ export default function CurrencyCalc({ config }: { config: Record<string, unknow
     return v == null ? "" : fmt(v, code);
   }
 
-  function handleFocus(code: string) {
+  function handleFocus(code: string, el: HTMLInputElement) {
     setFocusedCode(code);
     const v = computedValue(code);
-    setRawInput(v == null ? "" : v.toFixed(decimalsFor(code)));
+    const next = v == null ? "" : v.toFixed(decimalsFor(code));
+    setRawInput(next);
+    // Swapping the formatted value ("10,000") for the raw one ("10000") drops the caret to the
+    // start, which makes the first Backspace after a click do nothing - put it back at the end.
+    requestAnimationFrame(() => el.setSelectionRange(next.length, next.length));
   }
 
   function handleChange(code: string, raw: string) {
-    const cleared = raw.trim() === "";
-    setRawInput(cleared ? "0" : raw);
-    const num = cleared ? 0 : Number(raw);
+    // Keep the box literally empty while editing (backspacing to nothing must stay nothing);
+    // an empty box counts as 0 in the conversion, and the placeholder shows that 0.
+    setRawInput(raw);
+    const num = raw.trim() === "" ? 0 : Number(raw);
     if (!Number.isFinite(num)) return;
     save?.({ ...comp, baseCode: code, amount: num });
   }
@@ -157,8 +162,9 @@ export default function CurrencyCalc({ config }: { config: Record<string, unknow
                 type="text"
                 inputMode="decimal"
                 className={styles.input}
+                placeholder="0"
                 value={displayValue(code)}
-                onFocus={() => handleFocus(code)}
+                onFocus={(e) => handleFocus(code, e.currentTarget)}
                 onBlur={() => setFocusedCode(null)}
                 onChange={(e) => handleChange(code, e.target.value)}
               />
