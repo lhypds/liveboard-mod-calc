@@ -131,14 +131,16 @@ function press(s: CalcState, key: string): CalcState {
 
 export default function Calculator({ config }: { config: Record<string, unknown> }) {
   const [state, setState] = useState(INITIAL);
-  const containerRef = useRef<HTMLDivElement>(null);
+  // A real (but invisible) input, not the outer div, holds focus: Chromium/Safari/Firefox
+  // only ever dispatch a native "paste" event to an editable element, never to a plain div
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const comp = config.comp as Record<string, unknown> | undefined;
   const steveJobs = comp?.steveJobs !== false;
 
   function handlePress(key: string) {
     setState((s) => press(s, key));
-    containerRef.current?.focus();
+    inputRef.current?.focus();
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -148,17 +150,7 @@ export default function Calculator({ config }: { config: Record<string, unknown>
       navigator.clipboard.writeText(state.display);
       return;
     }
-    if ((e.metaKey || e.ctrlKey) && k.toLowerCase() === "v") {
-      // A plain (non-editable) div never receives a native "paste" event in
-      // Chromium/Safari/Firefox, so read the clipboard directly instead
-      e.preventDefault();
-      navigator.clipboard.readText().then((text) => {
-        const n = Number(text.trim());
-        if (!Number.isFinite(n)) return;
-        setState({ display: format(n), acc: null, pending: null, overwrite: false, last: null });
-      });
-      return;
-    }
+    if ((e.metaKey || e.ctrlKey) && k.toLowerCase() === "v") return; // handled by onPaste
     let key: string | null = null;
     if (/^[0-9]$/.test(k)) key = k;
     else if (k === "." || k === "+" || k === "-" || k === "*" || k === "/") key = k;
@@ -172,8 +164,25 @@ export default function Calculator({ config }: { config: Record<string, unknown>
     setState((s) => press(s, key));
   }
 
+  function handlePaste(e: React.ClipboardEvent) {
+    e.preventDefault();
+    const n = Number(e.clipboardData.getData("text").trim());
+    if (!Number.isFinite(n)) return;
+    setState({ display: format(n), acc: null, pending: null, overwrite: false, last: null });
+  }
+
   return (
-    <div ref={containerRef} className={styles.container} tabIndex={0} onKeyDown={handleKeyDown}>
+    <div className={styles.container} onClick={() => inputRef.current?.focus()}>
+      <input
+        ref={inputRef}
+        className={styles.hiddenInput}
+        value=""
+        onChange={() => {}}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        inputMode="none"
+        aria-hidden="true"
+      />
       <div className={`${styles.window} ${steveJobs ? styles.mac : styles.plain}`}>
         {steveJobs && (
           <div className={styles.titleBar}>

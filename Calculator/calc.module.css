@@ -1,12 +1,25 @@
 /* The Card body keeps 12px bottom / 10px right scroll padding; reclaim it so
    the calculator centers in the card's visual area, not the padded content box */
 .container {
+  position: relative;
   height: calc(100% + 12px);
   margin: 0 -10px -12px 0;
   display: flex;
   align-items: center;
   justify-content: center;
   outline: none;
+}
+
+/* Real focusable/editable input so the browser dispatches native keydown/paste
+   events to it, but invisible and never shows the on-screen keyboard */
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* --- shared layout, used by both styles --- */
