@@ -168,7 +168,7 @@ export default function Calculator({ config }: { config: Record<string, unknown>
     e.preventDefault();
     const n = Number(e.clipboardData.getData("text").trim());
     if (!Number.isFinite(n)) return;
-    setState({ display: format(n), acc: null, pending: null, overwrite: false, last: null });
+    setState((s) => ({ ...s, display: format(n), overwrite: false }));
   }
 
   return (
