@@ -147,6 +147,14 @@ const FIELDS: Array<{
     hint: (v, lang) => `${fmt(v.repairReserveMonthly * 12)}${lang === "en" ? " man-yen/yr" : "万円/年"}`,
   },
   {
+    key: "otherFeesMonthly",
+    section: "residence",
+    label: { en: "Other fees / mo", ja: "その他諸費用（月）", zh: "其他费用（月）" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 0.1,
+    hint: (v, lang) => `${fmt(v.otherFeesMonthly * 12)}${lang === "en" ? " man-yen/yr" : "万円/年"}`,
+  },
+  {
     key: "otherFeesYearly",
     section: "residence",
     label: { en: "Other fees / yr", ja: "その他諸費用（年）", zh: "其他费用（年）" },
@@ -198,6 +206,7 @@ const RUNNING_COST_KEYS: NumberKey[] = [
   "propertyTaxYearly",
   "managementMonthly",
   "repairReserveMonthly",
+  "otherFeesMonthly",
   "otherFeesYearly",
 ];
 

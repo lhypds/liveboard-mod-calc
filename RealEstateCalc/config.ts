@@ -67,6 +67,7 @@ export const config = {
     propertyTaxYearly: 15, // 固定資産税・都市計画税 (万円/年)
     managementMonthly: 2, // 管理費 (万円/月)
     repairReserveMonthly: 1, // 修繕積立金 (万円/月)
+    otherFeesMonthly: 0, // その他諸費用 (万円/月)
     otherFeesYearly: 0, // その他諸費用 (万円/年)
     appreciationRate: 0, // 価格変動率 (%/年)
     sellFee: 171.6, // 売却時仲介手数料 = (物件価格 x 3% + 6万円) x 1.1

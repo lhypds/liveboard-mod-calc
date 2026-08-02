@@ -13,6 +13,7 @@ export type RealEstateInputs = {
   propertyTaxYearly: number;
   managementMonthly: number;
   repairReserveMonthly: number;
+  otherFeesMonthly: number;
   otherFeesYearly: number;
   appreciationRate: number;
   sellFee: number;
@@ -97,7 +98,8 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
   // but still pay the ongoing monthly management fee (管理費) and repair reserve (修繕積立金).
   const brokerFee = input.propertyType === "new" ? 0 : input.brokerFee;
   const repairReserveFund = input.propertyType === "used" ? 0 : input.repairReserveFund;
-  const maintenanceYearly = (input.managementMonthly + input.repairReserveMonthly) * 12;
+  // Recurring monthly living costs (management fee, repair reserve, anything else) rolled up to a year
+  const monthlyCostsYearly = (input.managementMonthly + input.repairReserveMonthly + input.otherFeesMonthly) * 12;
 
   const purchaseFees =
     brokerFee +
@@ -122,7 +124,7 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
     const loanBalance = loanBalanceAfter(input.loanAmount, input.interestRate, input.loanYears, monthsPaid, payment);
     const propertyValue = input.price * Math.pow(1 + input.appreciationRate / 100, y);
     const paymentsMade = payment * monthsPaid;
-    const runningCost = (input.propertyTaxYearly + maintenanceYearly + input.otherFeesYearly) * y;
+    const runningCost = (input.propertyTaxYearly + monthlyCostsYearly + input.otherFeesYearly) * y;
     const loanTaxCredit = y <= creditPeriod ? Math.min(loanBalance, creditCap) * LOAN_TAX_CREDIT_RATE : 0;
     cumulativeLoanTaxCredit += loanTaxCredit;
     // Cash out net of the loan tax credit received back over the years so far
@@ -137,7 +139,7 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
   const monthsPaid = Math.min(years * 12, totalMonths);
   const principalRepaid = input.loanAmount - final.loanBalance;
   const interestPaid = payment * monthsPaid - principalRepaid;
-  const runningCost = (input.propertyTaxYearly + maintenanceYearly + input.otherFeesYearly) * years;
+  const runningCost = (input.propertyTaxYearly + monthlyCostsYearly + input.otherFeesYearly) * years;
   const totalLoanTaxCredit = rows.reduce((sum, r) => sum + r.loanTaxCredit, 0);
 
   return { monthlyPayment: payment, purchaseFees, rows, final, interestPaid, runningCost, totalLoanTaxCredit };
