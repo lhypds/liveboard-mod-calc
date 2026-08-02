@@ -1,4 +1,8 @@
 {
+  "Calculator": {
+    "enabled": true,
+    "allowMultipleInstances": true
+  },
   "CurrencyCalc": {
     "enabled": true,
     "allowMultipleInstances": true

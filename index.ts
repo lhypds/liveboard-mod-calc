@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import moduleConfig from "./modules.config.json" with { type: "json" };
+import * as Calculator from "./Calculator";
 import * as CurrencyCalc from "./CurrencyCalc";
 import * as RealEstateCalc from "./RealEstateCalc";
 import * as StockCalc from "./StockCalc";
@@ -29,6 +30,7 @@ export type ModuleEntry = {
 };
 
 const avaliableModules: Record<string, ModuleEntry> = {
+  Calculator: { component: Calculator.default, config: Calculator.config },
   CurrencyCalc: { component: CurrencyCalc.default, config: CurrencyCalc.config },
   RealEstateCalc: { component: RealEstateCalc.default, config: RealEstateCalc.config },
   StockCalc: { component: StockCalc.default, config: StockCalc.config },

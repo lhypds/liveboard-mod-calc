@@ -1,0 +1,173 @@
+/* The Card body keeps 12px bottom / 10px right scroll padding; reclaim it so
+   the calculator centers in the card's visual area, not the padded content box */
+.container {
+  height: calc(100% + 12px);
+  margin: 0 -10px -12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+/* --- shared layout, used by both styles --- */
+
+.window {
+  overflow: hidden;
+}
+
+.display {
+  margin: 8px 8px 7px;
+  height: 28px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 7px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: none;
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(4, 29px);
+  grid-auto-rows: 29px;
+  gap: 6px;
+  padding: 0 8px 9px;
+}
+
+.key {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.keyPlus {
+  grid-row: span 2;
+}
+
+.keyZero {
+  grid-column: span 2;
+  justify-content: flex-start;
+  padding-left: 9px;
+}
+
+/* --- classic 1984 Mac style (comp.steveJobs: true) --- */
+
+/* The classic Mac 50% dither: a checkerboard tile, so it degrades to flat
+   gray on browsers without SVG-in-CSS rather than losing the window entirely */
+.mac {
+  border: 1.5px solid #000;
+  border-radius: 8px;
+  background-color: #b8b8b8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2'%3E%3Crect width='2' height='2' fill='white'/%3E%3Crect width='1' height='1' fill='black'/%3E%3Crect x='1' y='1' width='1' height='1' fill='black'/%3E%3C/svg%3E");
+  background-size: 4px 4px;
+  box-shadow: 2px 2px 0 #000;
+}
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 18px;
+  padding: 0 6px;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-title);
+  font-size: 10px;
+  font-weight: 700;
+  user-select: none;
+}
+
+.closeBox {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #fff;
+}
+
+.titleText {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Balances the close box so the title stays optically centered */
+.titleSpacer {
+  flex-shrink: 0;
+  width: 8px;
+}
+
+.mac .display {
+  background: #fff;
+  border: 1px solid #000;
+  font-family: var(--font-title);
+  color: #000;
+}
+
+.mac .key {
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 3px;
+  box-shadow: 2px 2px 0 #000;
+  font-family: var(--font-title);
+  font-weight: 500;
+  color: #000;
+}
+
+/* Classic Mac buttons invert when pressed */
+.mac .key:active {
+  background: #000;
+  color: #fff;
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+/* --- plain house style (comp.steveJobs: false): same layout, no retro chrome,
+       20% larger than the mac replica --- */
+
+.plain .display {
+  margin: 10px 10px 8px;
+  height: 34px;
+  padding: 0 8px;
+  font-size: 17px;
+  background: #fff;
+  border: 1px solid #000;
+  color: #0f172a;
+}
+
+.plain .keys {
+  grid-template-columns: repeat(4, 35px);
+  grid-auto-rows: 35px;
+  gap: 7px;
+  padding: 0 10px 11px;
+}
+
+.plain .key {
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid #000;
+  box-shadow: 1px 1px 0 #000;
+  color: #0f172a;
+}
+
+.plain .keyZero {
+  padding-left: 11px;
+}
+
+.plain .key:hover {
+  background: #e2e8f0;
+}
+
+.plain .key:active {
+  background: #cbd5e1;
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}

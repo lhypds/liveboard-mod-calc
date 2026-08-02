@@ -5,6 +5,11 @@ liveboard-mod-calc
 
 Calculator [Liveboard](https://github.com/lhypds/liveboard) modules for Japan residents.
 
+`Calculator`  
+Replica of the original 1984 Macintosh Calculator, the design Steve Jobs made with the Calculator Construction Set.  
+Four functions plus exponent entry (E), with keyboard input support.  
+Set `comp.steveJobs` to `false` to keep the layout but drop the retro style.  
+
 `RealEstateCalc`  
 Japan real estate purchase calculator.  
 Input property price, loan and fees, estimate the net value after X years.  
