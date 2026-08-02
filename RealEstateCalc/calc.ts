@@ -11,7 +11,8 @@ export type RealEstateInputs = {
   otherFees: number;
   repairReserveFund: number;
   propertyTaxYearly: number;
-  maintenanceMonthly: number;
+  managementMonthly: number;
+  repairReserveMonthly: number;
   otherFeesYearly: number;
   appreciationRate: number;
   sellFee: number;
@@ -93,10 +94,10 @@ export function calcRealEstate(input: RealEstateInputs): RealEstateResult {
   // New-build purchases go direct from the developer (no buy-side broker fee).
   // The repair reserve fund (修繕積立基金) is a one-time founding contribution
   // collected only from first (new-build) buyers; used-home buyers don't pay it,
-  // but still pay the ongoing monthly maintenance/repair reserve (maintenanceMonthly).
+  // but still pay the ongoing monthly management fee (管理費) and repair reserve (修繕積立金).
   const brokerFee = input.propertyType === "new" ? 0 : input.brokerFee;
   const repairReserveFund = input.propertyType === "used" ? 0 : input.repairReserveFund;
-  const maintenanceYearly = input.maintenanceMonthly * 12;
+  const maintenanceYearly = (input.managementMonthly + input.repairReserveMonthly) * 12;
 
   const purchaseFees =
     brokerFee +

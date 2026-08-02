@@ -19,11 +19,11 @@ export const config = {
           value: { en: "Man-yen (10,000 JPY)", ja: "万円", zh: "万日元" },
         },
         {
-          key: { en: "Sell fee", ja: "売却手数料", zh: "卖出手续费" },
+          key: { en: "Broker fees", ja: "仲介手数料", zh: "中介费" },
           value: {
-            en: "Net-if-sold subtracts a fixed selling broker fee you enter directly",
-            ja: "売却時損益には直接入力した仲介手数料を差し引いて計算",
-            zh: "出售时损益已扣除直接输入的卖出中介费",
+            en: "Buy- and sell-side broker fees both auto-fill from (price x 3% + 6 man-yen) x 1.1 when the price changes; either can be overwritten by hand",
+            ja: "購入・売却の仲介手数料は物件価格の変更時に（物件価格×3%+6万円）×1.1で自動計算。手入力で上書きも可能",
+            zh: "购入・卖出中介费在房产价格变动时按（房产价格×3%+6万日元）×1.1自动计算，也可手动覆盖",
           },
         },
         {
@@ -59,13 +59,14 @@ export const config = {
     loanYears: 35, // 返済期間 (年)
     loanFeeRate: 2.2, // 融資事務手数料率 (%、借入額に対して)
     loanOtherFees: 3, // 融資関連その他費用（印紙代・登記関連など）
-    brokerFee: 172, // 仲介手数料
+    brokerFee: 171.6, // 購入仲介手数料 = (物件価格 x 3% + 6万円) x 1.1
     registrationFee: 50, // 登記費用
     acquisitionTax: 50, // 不動産取得税
     otherFees: 30, // 印紙税など
     repairReserveFund: 20, // 修繕積立基金（新築時のみ）
     propertyTaxYearly: 15, // 固定資産税・都市計画税 (万円/年)
-    maintenanceMonthly: 3, // 管理費・修繕積立金 (万円/月)
+    managementMonthly: 2, // 管理費 (万円/月)
+    repairReserveMonthly: 1, // 修繕積立金 (万円/月)
     otherFeesYearly: 0, // その他諸費用 (万円/年)
     appreciationRate: 0, // 価格変動率 (%/年)
     sellFee: 171.6, // 売却時仲介手数料 = (物件価格 x 3% + 6万円) x 1.1

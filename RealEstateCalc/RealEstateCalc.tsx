@@ -131,12 +131,20 @@ const FIELDS: Array<{
     step: 1,
   },
   {
-    key: "maintenanceMonthly",
+    key: "managementMonthly",
     section: "residence",
-    label: { en: "Maintenance / mo", ja: "管理・修繕（月）", zh: "管理・修缮（月）" },
+    label: { en: "Management fee / mo", ja: "管理費（月）", zh: "管理费（月）" },
     unit: { en: "man-yen", ja: "万円", zh: "万円" },
-    step: 1,
-    hint: (v, lang) => `${fmt(v.maintenanceMonthly * 12)}${lang === "en" ? " man-yen/yr" : "万円/年"}`,
+    step: 0.1,
+    hint: (v, lang) => `${fmt(v.managementMonthly * 12)}${lang === "en" ? " man-yen/yr" : "万円/年"}`,
+  },
+  {
+    key: "repairReserveMonthly",
+    section: "residence",
+    label: { en: "Repair reserve / mo", ja: "修繕積立金（月）", zh: "修缮积立金（月）" },
+    unit: { en: "man-yen", ja: "万円", zh: "万円" },
+    step: 0.1,
+    hint: (v, lang) => `${fmt(v.repairReserveMonthly * 12)}${lang === "en" ? " man-yen/yr" : "万円/年"}`,
   },
   {
     key: "otherFeesYearly",
@@ -186,7 +194,12 @@ const PURCHASE_FEE_SECTION_HINT: Partial<Record<NumberKey, "contractFees" | "loa
 };
 
 // Field keys that flow into the "Running cost" summary total
-const RUNNING_COST_KEYS: NumberKey[] = ["propertyTaxYearly", "maintenanceMonthly", "otherFeesYearly"];
+const RUNNING_COST_KEYS: NumberKey[] = [
+  "propertyTaxYearly",
+  "managementMonthly",
+  "repairReserveMonthly",
+  "otherFeesYearly",
+];
 
 // Field keys that flow into the "Sell costs" summary total
 const SELL_COST_KEYS: NumberKey[] = ["sellFee", "sellTax", "sellOtherFees"];
@@ -302,6 +315,13 @@ function readInputs(comp: Record<string, unknown> | undefined): RealEstateInputs
       result[key] = v;
     }
   }
+  // Legacy boards stored 管理費 and 修繕積立金 as one combined monthly field. Keep the running-cost
+  // total identical by carrying it over into 管理費 - the user can re-split it by hand.
+  const legacy = comp?.maintenanceMonthly;
+  if (comp?.managementMonthly === undefined && comp?.repairReserveMonthly === undefined && typeof legacy === "number" && Number.isFinite(legacy)) {
+    result.managementMonthly = legacy;
+    result.repairReserveMonthly = 0;
+  }
   return result;
 }
 
@@ -415,19 +435,29 @@ export default function RealEstateCalc({ config }: { config: Record<string, unkn
     if (!Number.isFinite(num)) return;
     const next: Record<string, unknown> = { ...comp, [key]: num };
     if (key === "price") {
-      const sellFee = estimateBrokerFee(num);
-      next.sellFee = sellFee;
-      setDraft((prev) => ({ ...prev, sellFee: String(sellFee) }));
+      // Buy- and sell-side broker fees follow the same statutory formula, so both track the price
+      const fee = estimateBrokerFee(num);
+      const patch: Record<string, string> = { sellFee: String(fee) };
+      next.sellFee = fee;
+      if (values.propertyType !== "new") {
+        next.brokerFee = fee;
+        patch.brokerFee = String(fee);
+      }
+      setDraft((prev) => ({ ...prev, ...patch }));
     }
     saveComp(next);
   }
 
   function handlePropertyTypeChange(next: "new" | "used") {
     const patch: Record<string, unknown> = { ...comp, propertyType: next };
-    const clearedKey: NumberKey | null = next === "new" ? "brokerFee" : next === "used" ? "repairReserveFund" : null;
-    if (clearedKey) {
-      patch[clearedKey] = 0;
-      setDraft((prev) => ({ ...prev, [clearedKey]: "0" }));
+    // New builds sell direct from the developer (no buy-side broker fee); switching back to
+    // used restores the formula amount rather than leaving the zero behind.
+    const brokerFee = next === "new" ? 0 : estimateBrokerFee(values.price);
+    patch.brokerFee = brokerFee;
+    setDraft((prev) => ({ ...prev, brokerFee: String(brokerFee) }));
+    if (next === "used") {
+      patch.repairReserveFund = 0;
+      setDraft((prev) => ({ ...prev, repairReserveFund: "0" }));
     }
     saveComp(patch);
   }
