@@ -15,6 +15,20 @@ type CalcState = {
 
 const INITIAL: CalcState = { display: "0", acc: null, pending: null, overwrite: true, last: null };
 
+// Reads a previously-persisted CalcState back out of config.comp, falling back to INITIAL
+// for a fresh card or a comp shape that predates this (e.g. only { steveJobs }).
+function restore(comp: Record<string, unknown> | undefined): CalcState {
+  if (typeof comp?.display !== "string") return INITIAL;
+  const pending = comp.pending;
+  return {
+    display: comp.display,
+    acc: typeof comp.acc === "number" ? comp.acc : null,
+    pending: pending === "+" || pending === "-" || pending === "*" || pending === "/" ? pending : null,
+    overwrite: comp.overwrite === true,
+    last: (comp.last ?? null) as CalcState["last"],
+  };
+}
+
 // Rows are laid out by CSS grid auto-placement: "+" spans two rows, "0" two columns.
 // plainLabel swaps in a real ×/− glyph for the plain style; the mac replica keeps
 // the ASCII faces of the 1984 original.
@@ -130,16 +144,24 @@ function press(s: CalcState, key: string): CalcState {
 }
 
 export default function Calculator({ config }: { config: Record<string, unknown> }) {
-  const [state, setState] = useState(INITIAL);
+  const comp = config.comp as Record<string, unknown> | undefined;
+  const save = config._save as ((comp: Record<string, unknown>) => void) | undefined;
+  const steveJobs = comp?.steveJobs !== false;
+
+  const [state, setState] = useState(() => restore(comp));
   // A real (but invisible) input, not the outer div, holds focus: Chromium/Safari/Firefox
   // only ever dispatch a native "paste" event to an editable element, never to a plain div
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const comp = config.comp as Record<string, unknown> | undefined;
-  const steveJobs = comp?.steveJobs !== false;
+  // Every keypress both updates the display and persists it to config.comp, so the
+  // result survives a page refresh or a board duplication instead of resetting to 0.
+  function commit(next: CalcState) {
+    setState(next);
+    save?.({ ...comp, display: next.display, acc: next.acc, pending: next.pending, overwrite: next.overwrite, last: next.last });
+  }
 
   function handlePress(key: string) {
-    setState((s) => press(s, key));
+    commit(press(state, key));
     inputRef.current?.focus();
   }
 
@@ -161,14 +183,14 @@ export default function Calculator({ config }: { config: Record<string, unknown>
     if (key === null) return;
     e.preventDefault();
     e.stopPropagation();
-    setState((s) => press(s, key));
+    commit(press(state, key));
   }
 
   function handlePaste(e: React.ClipboardEvent) {
     e.preventDefault();
     const n = Number(e.clipboardData.getData("text").trim());
     if (!Number.isFinite(n)) return;
-    setState((s) => ({ ...s, display: format(n), overwrite: false }));
+    commit({ ...state, display: format(n), overwrite: false });
   }
 
   return (
