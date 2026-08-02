@@ -162,8 +162,12 @@
   padding-left: 11px;
 }
 
-.plain .key:hover {
-  background: #e2e8f0;
+/* Hover only on devices that really hover — on touch (iOS) the tap would
+   otherwise leave the key stuck gray until the next tap elsewhere */
+@media (hover: hover) {
+  .plain .key:hover {
+    background: #e2e8f0;
+  }
 }
 
 .plain .key:active {
