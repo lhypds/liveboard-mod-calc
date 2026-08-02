@@ -146,6 +146,7 @@ function press(s: CalcState, key: string): CalcState {
 export default function Calculator({ config }: { config: Record<string, unknown> }) {
   const comp = config.comp as Record<string, unknown> | undefined;
   const save = config._save as ((comp: Record<string, unknown>) => void) | undefined;
+  const deleteCard = config._delete as (() => void) | undefined;
   const steveJobs = comp?.steveJobs !== false;
 
   const [state, setState] = useState(() => restore(comp));
@@ -193,6 +194,12 @@ export default function Calculator({ config }: { config: Record<string, unknown>
     commit({ ...state, display: format(n), overwrite: false });
   }
 
+  // The title bar's close box, like closing an actual Mac window: removes this
+  // calculator card from the board entirely, same as the Edit modal's delete.
+  function handleClose() {
+    deleteCard?.();
+  }
+
   return (
     <div className={styles.container} onClick={() => inputRef.current?.focus()}>
       <input
@@ -208,7 +215,7 @@ export default function Calculator({ config }: { config: Record<string, unknown>
       <div className={`${styles.window} ${steveJobs ? styles.mac : styles.plain}`}>
         {steveJobs && (
           <div className={styles.titleBar}>
-            <span className={styles.closeBox} />
+            <button type="button" tabIndex={-1} className={styles.closeBox} onClick={handleClose} aria-label="Close" />
             <span className={styles.titleText}>Calculator</span>
             <span className={styles.titleSpacer} />
           </div>

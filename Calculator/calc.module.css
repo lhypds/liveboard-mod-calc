@@ -98,11 +98,30 @@
   user-select: none;
 }
 
+/* The visible square stays 8x8 (authentic to the original), but the clickable
+   area is padded out to 16x16 with a matching negative margin so it doesn't
+   throw off the titleBar's flex layout — the 8x8 box is a fiddly mouse target */
 .closeBox {
+  all: unset;
+  box-sizing: content-box;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  padding: 4px;
+  margin: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.closeBox::after {
+  content: "";
   flex-shrink: 0;
   width: 8px;
   height: 8px;
   border: 1px solid #fff;
+  box-sizing: border-box;
 }
 
 .titleText {
