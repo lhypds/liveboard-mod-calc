@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CURRENCIES, CURRENCY_MAP, DEFAULT_CURRENCIES, convert, type Lang } from "./calc";
-import { fetchRates, type RatesData } from "./rates";
+import { fetchRates, readStoredRates, sameStoredRates, trimRates, type RatesData } from "./rates";
 import { config as defaultConfig } from "./config";
 import styles from "./calc.module.css";
 
@@ -71,29 +71,46 @@ export default function CurrencyCalc({ config }: { config: Record<string, unknow
 
   const values = readValues(comp);
 
-  const [rates, setRates] = useState<RatesData | null>(null);
-  const [ratesLoading, setRatesLoading] = useState(true);
+  // Rates the card already carries in its own config. Read once, on mount: fresh ones render
+  // immediately and ask the API for nothing.
+  const [storedRates] = useState(() => readStoredRates(comp?.rates, values.currencies));
+  const [rates, setRates] = useState<RatesData | null>(storedRates);
+  const [ratesLoading, setRatesLoading] = useState(!storedRates);
   const [ratesError, setRatesError] = useState<string | null>(null);
   const [focusedCode, setFocusedCode] = useState<string | null>(null);
   const [rawInput, setRawInput] = useState("");
   const [addCode, setAddCode] = useState("");
 
-  function loadRates(force: boolean) {
+  function loadRates() {
     setRatesLoading(true);
     setRatesError(null);
-    fetchRates(force)
+    fetchRates()
       .then((data) => setRates(data))
       .catch((err) => setRatesError(err instanceof Error ? err.message : String(err)))
       .finally(() => setRatesLoading(false));
   }
 
-  // Initial load: ratesLoading already starts true, so no synchronous setState here.
+  // Initial load, skipped when the config already had rates: ratesLoading is set from that same
+  // decision above, so there is no synchronous setState here.
   useEffect(() => {
-    fetchRates(false)
+    if (storedRates) return;
+    fetchRates()
       .then((data) => setRates(data))
       .catch((err) => setRatesError(err instanceof Error ? err.message : String(err)))
       .finally(() => setRatesLoading(false));
-  }, []);
+  }, [storedRates]);
+
+  // Keep the config's copy in step with what is on screen. The only writer of comp.rates, and it
+  // writes nothing when the config already matches — which is the case for a card that just
+  // restored from it. Deliberately not keyed on comp: this effect is what changes comp, and running
+  // again on its own write is exactly what the equality check exists to make pointless.
+  const currencyKey = values.currencies.join(",");
+  useEffect(() => {
+    if (!rates) return;
+    const next = trimRates(rates, values.currencies);
+    if (!sameStoredRates(comp?.rates, next)) save?.({ ...comp, rates: next });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rates, currencyKey]);
 
   function computedValue(code: string): number | null {
     if (code === values.baseCode) return values.amount;
@@ -130,6 +147,9 @@ export default function CurrencyCalc({ config }: { config: Record<string, unknow
     if (!code || values.currencies.includes(code)) return;
     save?.({ ...comp, currencies: [...values.currencies, code] });
     setAddCode("");
+    // Rates restored from the config only cover the currencies that were on screen when they were
+    // stored, so a row added afterwards may have nothing to convert with.
+    if (rates && !(code in rates.rates)) loadRates();
   }
 
   function handleRemove(code: string) {
@@ -199,7 +219,7 @@ export default function CurrencyCalc({ config }: { config: Record<string, unknow
         ) : ratesError ? (
           <span className={styles.statusError}>
             {t.error}
-            <button type="button" className={styles.retryBtn} onClick={() => loadRates(true)}>
+            <button type="button" className={styles.retryBtn} onClick={() => loadRates()}>
               {t.retry}
             </button>
           </span>
@@ -208,7 +228,7 @@ export default function CurrencyCalc({ config }: { config: Record<string, unknow
             {t.updated} {rates?.date}
           </span>
         )}
-        <button type="button" className={styles.refreshBtn} onClick={() => loadRates(true)} disabled={ratesLoading}>
+        <button type="button" className={styles.refreshBtn} onClick={() => loadRates()} disabled={ratesLoading}>
           {t.refresh}
         </button>
       </div>
