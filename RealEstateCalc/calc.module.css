@@ -5,6 +5,10 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* The card's .body adds 10px of right padding as a scrollbar gutter, which this module
+     never uses since it scrolls itself. Left unreclaimed it makes the right margin wider
+     than the left, so nothing on the right reaches the card edge. */
+  margin-right: -10px;
 }
 
 .container::-webkit-scrollbar {
@@ -269,9 +273,21 @@
   color: #b91c1c;
 }
 
+/* Every other item in the column keeps its height; the table is the one that gives. Bounding
+   it this way is what lets it scroll its own rows — with `flex-shrink: 0` it just made the
+   whole card scroll, header and all. */
+.container > * {
+  flex-shrink: 0;
+}
+
 .tableWrap {
+  flex-shrink: 1;
+  min-height: 88px;
   overflow: auto;
   scrollbar-width: none;
+  /* The frame belongs to the scrollport, not the table: on the table its bottom edge scrolled
+     away with the last row, leaving the visible area open at the bottom. */
+  border: 1px solid #000;
 }
 
 .tableWrap::-webkit-scrollbar {
@@ -293,7 +309,16 @@
 }
 
 .table th {
-  border-bottom: 2px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  /* The rule lives inside the cell: a collapsed border belongs to the table, not the cell, so
+     a border here stops being painted while the header is stuck. The outer white band covers
+     the sub-pixel sliver of the row passing underneath. */
+  box-shadow:
+    inset 0 -1px 0 #000,
+    0 -2px 0 #fff;
   font-weight: 600;
 }
 
@@ -314,7 +339,10 @@
 
 .numFrac {
   flex: 0 0 auto;
-  min-width: 2.2em;
+  /* Just wide enough for the widest fraction fmt() produces (".00" at two decimals), so the
+     decimal points line up down the column without leaving the numbers short of the right
+     edge — the header sits flush right, and this is what lets the data meet it. */
+  min-width: 1.4em;
   text-align: left;
 }
 

@@ -14,5 +14,9 @@
   "StockCalc": {
     "enabled": true,
     "allowMultipleInstances": true
+  },
+  "TokenCalc": {
+    "enabled": true,
+    "allowMultipleInstances": true
   }
 }

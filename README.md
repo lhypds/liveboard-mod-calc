@@ -23,6 +23,26 @@ Currency exchange calculator.
 Convert an amount across multiple currencies at once. Defaults to JPY / USD / CNY / AUD, more can be added.  
 Rates come from [Frankfurter](https://frankfurter.dev) (ECB reference rates), no API key required.
 
+`TokenCalc`  
+LLM token cost calculator, covering Anthropic, OpenAI, DeepSeek and Kimi text models.  
+Search a model by name, id or provider to add it, enter one token workload (input / cache read /
+cache write / output, times a call count), and compare the cost across every model on screen.  
+Click a row to see that model's release date, context window, max output, parameter count where
+disclosed, modalities, capabilities and full per-MTok price list.  
+Models with more than one published price point (long context, fast mode, introductory pricing)
+get a tier dropdown in their row. The batch checkbox halves the cost for the models whose
+provider publishes a batch tier and flags the ones that don't with `†`.  
+It opens in a simple view — input + output at each model's default rate. The `Full mode`
+checkbox brings back the tier, cache and batch controls; the settings those control are kept in
+`comp` either way, so the switch is lossless in both directions.  
+DeepSeek and Kimi price in CNY, so cross-provider totals convert through
+[Frankfurter](https://frankfurter.dev) (ECB reference rates), no API key required.  
+Cache rates are derived where the provider publishes a multiplier rather than a price
+(Anthropic 0.1× read / 1.25× write, OpenAI 0.1× read) and transcribed where it publishes one
+directly (DeepSeek, Kimi). Prices verified 2026-08-10; edit `models.ts` to update them.  
+Text models only — image, video, audio and embedding endpoints are priced per second or per
+image and are out of scope.
+
 
 Setup
 -----

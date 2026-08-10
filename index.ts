@@ -4,6 +4,7 @@ import * as Calculator from "./Calculator";
 import * as CurrencyCalc from "./CurrencyCalc";
 import * as RealEstateCalc from "./RealEstateCalc";
 import * as StockCalc from "./StockCalc";
+import * as TokenCalc from "./TokenCalc";
 
 export type ModuleEntry = {
   component: ComponentType<{ config: Record<string, unknown> }>;
@@ -34,6 +35,7 @@ const avaliableModules: Record<string, ModuleEntry> = {
   CurrencyCalc: { component: CurrencyCalc.default, config: CurrencyCalc.config },
   RealEstateCalc: { component: RealEstateCalc.default, config: RealEstateCalc.config },
   StockCalc: { component: StockCalc.default, config: StockCalc.config },
+  TokenCalc: { component: TokenCalc.default, config: TokenCalc.config },
 };
 
 const modules: Record<string, ModuleEntry> = Object.fromEntries(

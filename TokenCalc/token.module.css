@@ -1,0 +1,610 @@
+.container {
+  height: 100%;
+  overflow: auto;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* The card's .body adds 10px of right padding as a scrollbar gutter, which this module
+     never uses since it scrolls itself. Left unreclaimed it makes the right margin wider
+     than the left, so the currency select stops short of the card edge. */
+  margin-right: -10px;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---- search + currency ------------------------------------------------- */
+
+.topRow {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.search {
+  width: 100%;
+  box-sizing: border-box;
+  height: 26px;
+  border: 1px solid #000;
+  padding: 0 8px;
+  font-size: 12px;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+}
+
+.search::placeholder {
+  color: #94a3b8;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #000;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.suggestion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.suggestionName {
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.suggestionMeta {
+  color: #64748b;
+  font-size: 10px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestionActive {
+  background: #000;
+}
+
+.suggestionActive .suggestionName,
+.suggestionActive .suggestionMeta {
+  color: #fff;
+}
+
+.suggestionEmpty {
+  padding: 4px 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ---- dropdown (replaces <select>, whose open list can't be styled) ------ */
+
+.selectWrap {
+  position: relative;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.selectBtn {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 0 4px 0 6px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.selectBtnCurrency {
+  height: 26px;
+  font-size: 10px;
+}
+
+.selectBtnTier {
+  height: 18px;
+  font-size: 10px;
+  max-width: 72px;
+}
+
+.selectLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectArrow {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  stroke: #000;
+  stroke-width: 1.2;
+  fill: none;
+}
+
+.options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  min-width: 100%;
+  width: max-content;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid #000;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* The currency dropdown sits at the card's right edge, so its list opens leftwards. */
+.optionsRight {
+  left: auto;
+  right: 0;
+}
+
+.option {
+  padding: 2px 6px;
+  font-size: 10px;
+  color: #0f172a;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.option:hover {
+  background: #f1f5f9;
+}
+
+.optionActive,
+.optionActive:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* ---- workload inputs --------------------------------------------------- */
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  flex-shrink: 0;
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px 8px;
+  flex-shrink: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fieldLabel {
+  font-size: 10px;
+  line-height: 14px;
+  height: 14px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.input {
+  width: 100%;
+  height: 24px;
+  box-sizing: border-box;
+  border: 1px solid #000;
+  padding: 0 6px;
+  font-size: 12px;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.input::placeholder {
+  color: #94a3b8;
+}
+
+/* ---- comparison table -------------------------------------------------- */
+
+/* Every other item in the column keeps its height; the table is the one that gives. Bounding
+   it this way is what lets it scroll its own rows — with `flex-shrink: 0` it just made the
+   whole card scroll, header and all. */
+.container > * {
+  flex-shrink: 0;
+}
+
+.tableWrap {
+  flex-shrink: 1;
+  min-height: 88px;
+  overflow: auto;
+  scrollbar-width: none;
+  /* The frame belongs to the scrollport, not the table: on the table its bottom edge scrolled
+     away with the last row, leaving the visible area open at the bottom. */
+  border: 1px solid #000;
+}
+
+.tableWrap::-webkit-scrollbar {
+  display: none;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: 2px 4px;
+  text-align: right;
+  white-space: nowrap;
+  /* Rows are as tall as their tallest cell (the tier dropdown), so every other cell has to
+     say where it sits in that height. Not left to the UA default. */
+  vertical-align: middle;
+}
+
+/* The remove button carries its own hairline, so it needs the same inset as the model name
+   on the other side — flush against the table's border would read as one thick line. */
+.table .actionCol {
+  width: 16px;
+  padding-right: 4px;
+}
+
+/* Money columns hold a value that changes as tiers and token counts change, and an auto table
+   re-lays out every column when one of them does — so the whole row jitters on a tier switch.
+   A floor wide enough for a typical figure keeps them still; a value wider than this still
+   grows the column, which is a real layout change rather than jitter. */
+.table .numCol {
+  min-width: 60px;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  /* The rule lives inside the cell: a collapsed border belongs to the table, not the cell, so
+     a border here stops being painted while the header is stuck. The outer white band covers
+     the sub-pixel sliver of the row passing underneath. */
+  box-shadow:
+    inset 0 -1px 0 #000,
+    0 -2px 0 #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Prefixed with `.table` so these beat the right-alignment and nowrap on `.table td`, which
+   is the more specific selector on its own. */
+.table .labelCol {
+  text-align: left;
+}
+
+/* The model column is the one that yields — but only down to a point. Ellipsising the name
+   removed its min-content width, which let the money columns squeeze it to a few characters;
+   the floor holds enough for a typical name, and `width` steers the table's spare space here
+   rather than spreading it across the money columns, pushing the tier column further right. */
+.table .modelCol {
+  min-width: 120px;
+  width: 40%;
+}
+
+.table tbody tr {
+  cursor: pointer;
+}
+
+.table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.rowFocused {
+  background: #f1f5f9;
+}
+
+.modelCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.modelName {
+  /* A size down from the table's 12px: the names are the longest strings in the row, and at
+     10px nearly all of them fit the column on one line. A row is one line high either way —
+     the rare name that still doesn't fit ellipsises and carries a title attribute. */
+  font-size: 10px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tierStatic {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.flag {
+  color: #b45309;
+  cursor: help;
+}
+
+.totalCell {
+  font-weight: 600;
+}
+
+.best {
+  font-weight: 600;
+  color: #15803d;
+  white-space: nowrap;
+}
+
+.removeBtn {
+  all: unset;
+  box-sizing: border-box;
+  /* A flex box ignores the cell's text-align, so this is what pushes it to the right edge */
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.removeBtn:hover {
+  color: #b91c1c;
+}
+
+.emptyHint {
+  font-size: 12px;
+  color: #64748b;
+  padding: 8px 0;
+}
+
+/* ---- footer ------------------------------------------------------------ */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+/* Both toggles sit together at the left; the status line keeps the right end. */
+.checks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* The system checkbox brings its own colour and corner radius, which reads as foreign next
+   to the card's black hairline boxes. Same border, same white ground, same SVG-glyph idiom
+   as the selects' arrow. */
+.check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  margin: 0;
+  width: 12px;
+  height: 12px;
+  border: 1px solid #000;
+  border-radius: 0;
+  background: #fff;
+  cursor: pointer;
+}
+
+.check input[type="checkbox"]:checked {
+  background: #000
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2l2.2 2.2L8 3' stroke='%23fff' stroke-width='1.4' fill='none'/%3E%3C/svg%3E")
+    no-repeat center;
+}
+
+.status {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b91c1c;
+  white-space: nowrap;
+}
+
+.retryBtn {
+  flex-shrink: 0;
+  border: 1px solid #000;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 10px;
+  padding: 0 6px;
+  cursor: pointer;
+}
+
+.retryBtn:hover {
+  background: #e2e8f0;
+}
+
+.flagNote {
+  font-size: 10px;
+  color: #b45309;
+  flex-shrink: 0;
+}
+
+/* ---- model info panel -------------------------------------------------- */
+
+.panel {
+  border-top: 1px dashed #cbd5e1;
+  /* Enough that the model name reads as sitting below the divider rather than on it. */
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.panelName {
+  /* Same size as the "Tokens per call" heading above — both are section headings. */
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.panelId {
+  font-family: var(--font-title), monospace;
+  font-size: 10px;
+  color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.facts {
+  display: grid;
+  /* Wide enough that a key and its value fit on one line — at 150px the longest pairs
+     ("Provider · status", the modality arrow) ellipsised. */
+  grid-template-columns: repeat(auto-fill, minmax(192px, 1fr));
+  gap: 2px 12px;
+}
+
+.fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+  min-width: 0;
+}
+
+.factKey {
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.factValue {
+  color: #0f172a;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip {
+  font-size: 10px;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #000;
+  padding: 0 4px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.panelSection {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.priceList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  min-width: 0;
+}
+
+.priceLabel {
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.priceValue {
+  color: #0f172a;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.panelNote {
+  font-size: 10px;
+  line-height: 14px;
+  color: #64748b;
+}
