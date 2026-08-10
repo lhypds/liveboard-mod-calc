@@ -241,6 +241,12 @@
   color: #94a3b8;
 }
 
+/* A zero count contributes nothing to the total, so it reads like the placeholder it
+   replaced rather than like a figure that was typed on purpose. */
+.input.inputZero {
+  color: #94a3b8;
+}
+
 /* ---- comparison table -------------------------------------------------- */
 
 /* Every other item in the column keeps its height; the table is the one that gives. Bounding
@@ -347,10 +353,10 @@
 }
 
 .modelName {
-  /* A size down from the table's 12px: the names are the longest strings in the row, and at
-     10px nearly all of them fit the column on one line. A row is one line high either way —
-     the rare name that still doesn't fit ellipsises and carries a title attribute. */
-  font-size: 10px;
+  /* The name is what identifies the row, so it reads at the table's own 12px rather than
+     shrinking to fit. A row is one line high either way — a name too long for the column
+     ellipsises and carries a title attribute. */
+  font-size: 12px;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

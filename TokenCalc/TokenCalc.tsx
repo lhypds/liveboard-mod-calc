@@ -399,8 +399,10 @@ export default function TokenCalc({ config }: { config: Record<string, unknown> 
   }
 
   function handleFieldChange(key: WorkloadKey, raw: string) {
-    setDraft(raw);
-    const n = parseTokens(raw);
+    // A leading zero never carries meaning in a token count, so typing 0 then 1 reads as 1.
+    const text = raw.replace(/^0+(?=\d)/, "");
+    setDraft(text);
+    const n = parseTokens(text);
     if (n === null) return;
     save?.({ ...comp, [COMP_KEYS[key]]: n });
   }
@@ -508,12 +510,14 @@ export default function TokenCalc({ config }: { config: Record<string, unknown> 
             <input
               type="text"
               inputMode="numeric"
-              className={styles.input}
+              className={`${styles.input} ${values.workload[f.key] === 0 ? styles.inputZero : ""}`}
               placeholder="0"
               value={fieldValue(f.key)}
               onFocus={() => {
                 setFocusedField(f.key);
-                setDraft(String(values.workload[f.key]));
+                // Zero is this field's empty state — the grey placeholder says so — so the box
+                // opens empty and the first digit typed is the whole number, not "01" or "10".
+                setDraft(values.workload[f.key] === 0 ? "" : String(values.workload[f.key]));
               }}
               onBlur={() => setFocusedField(null)}
               onChange={(e) => handleFieldChange(f.key, e.target.value)}
