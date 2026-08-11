@@ -236,10 +236,14 @@ function Dropdown({
 }
 
 function readValues(comp: Record<string, unknown> | undefined): CompValues {
-  const rawModels = Array.isArray(comp?.models)
-    ? (comp.models as unknown[]).filter((id): id is string => typeof id === "string" && !!MODEL_MAP[id])
-    : [];
-  const models = rawModels.length > 0 ? Array.from(new Set(rawModels)) : [...DEFAULTS.models];
+  // An empty list is a real state, not a broken one: removing the last model leaves the card
+  // empty until something is searched for. Only a card that never stored a list — an older
+  // board, or one whose value isn't an array — starts from the defaults.
+  const models = Array.isArray(comp?.models)
+    ? Array.from(
+        new Set((comp.models as unknown[]).filter((id): id is string => typeof id === "string" && !!MODEL_MAP[id])),
+      )
+    : [...DEFAULTS.models];
 
   const focus = typeof comp?.focus === "string" && models.includes(comp.focus) ? comp.focus : (models[0] ?? "");
 
