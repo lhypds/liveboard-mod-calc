@@ -3,7 +3,11 @@ liveboard-mod-calc
 ==================
 
 
-Calculator [Liveboard](https://github.com/lhypds/liveboard) modules for Japan residents.
+Calculator [Liveboard](https://github.com/lhypds/liveboard) modules.
+
+
+Modules
+-------
 
 `Calculator`  
 Replica of the original 1984 Macintosh Calculator, the design Steve Jobs made with the Calculator Construction Set.  
