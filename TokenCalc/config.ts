@@ -1,6 +1,6 @@
 export const config = {
   i: "TokenCalc",
-  title: { en: "Token Calc", ja: "トークン計算", zh: "Token 计算" },
+  title: { en: "Token Calc", ja: "トークン計算", zh: "词元计算" },
   refreshAgeMinutes: 0,
   info: [
     {
@@ -11,7 +11,7 @@ export const config = {
           value: {
             en: "Price one token workload across LLMs from Anthropic, OpenAI, DeepSeek and Kimi, and look up each model's capabilities",
             ja: "同一のトークン使用量をAnthropic・OpenAI・DeepSeek・Kimiのモデル間で比較し、各モデルの仕様も参照",
-            zh: "以同一 token 用量比较 Anthropic、OpenAI、DeepSeek、Kimi 各模型的价格，并查看模型能力",
+            zh: "以同一词元用量比较 Anthropic、OpenAI、DeepSeek、Kimi 各模型的价格，并查看模型能力",
           },
         },
         {
@@ -19,7 +19,7 @@ export const config = {
           value: {
             en: "Per million tokens, from each provider's public price page; verified 2026-08-10",
             ja: "各社の公開価格ページに基づく百万トークン単価。2026-08-10時点で確認",
-            zh: "每百万 token，来自各厂商公开价格页；2026-08-10 核验",
+            zh: "每百万词元，来自各厂商公开价格页；2026-08-10 核验",
           },
         },
         {

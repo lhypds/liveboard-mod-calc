@@ -225,7 +225,7 @@ const ANTHROPIC_MODELS: ModelInfo[] = [
     note: {
       en: "Default recommendation for complex agentic coding. Thinking is on by default. Fast mode gives ~2.5× output speed at the higher rate, on the Claude API only. Prompt-cache minimum is 512 tokens.",
       ja: "複雑なエージェント型コーディングの標準推奨。思考はデフォルトでオン。高速モードは約2.5倍の出力速度で高価格、Claude APIのみ。プロンプトキャッシュ下限は512トークン。",
-      zh: "复杂 Agent 编码的默认推荐。思考默认开启。快速模式约 2.5× 输出速度、价格更高，仅 Claude API 提供。提示缓存最小 512 token。",
+      zh: "复杂 Agent 编码的默认推荐。思考默认开启。快速模式约 2.5× 输出速度、价格更高，仅 Claude API 提供。提示缓存最小 512 词元。",
     },
   },
   {
@@ -664,7 +664,7 @@ const OPENAI_MODELS: ModelInfo[] = [
     note: {
       en: "Open-weight model under Apache 2.0. No OpenAI per-token charge — you pay for the compute you run it on.",
       ja: "Apache 2.0のオープンウェイトモデル。OpenAIのトークン課金はなく、自前の計算資源コストのみ。",
-      zh: "Apache 2.0 开放权重模型。无 OpenAI 按 token 计费，自行承担部署算力成本。",
+      zh: "Apache 2.0 开放权重模型。无 OpenAI 按词元计费，自行承担部署算力成本。",
     },
   },
   {
@@ -802,7 +802,7 @@ const DEEPSEEK_MODELS: ModelInfo[] = [
     note: {
       en: "Open reasoning model released under MIT. No DeepSeek per-token charge on the weights themselves — compute cost is yours. The hosted alias is no longer part of the current V4 line.",
       ja: "MITライセンスで公開された推論モデル。重み自体にDeepSeekのトークン課金はなく、計算資源コストは自己負担。ホスト版エイリアスは現行V4系には含まれない。",
-      zh: "以 MIT 许可开放的推理模型。权重本身无 DeepSeek 按 token 计费，算力成本自理。托管 alias 已不属于当前 V4 主线。",
+      zh: "以 MIT 许可开放的推理模型。权重本身无 DeepSeek 按词元计费，算力成本自理。托管 alias 已不属于当前 V4 主线。",
     },
   },
   {
@@ -821,7 +821,7 @@ const DEEPSEEK_MODELS: ModelInfo[] = [
     note: {
       en: "R1's reasoning distilled into Qwen and Llama checkpoints at six sizes, for local deployment. No hosted per-token rate; each checkpoint carries both DeepSeek's release terms and its base model's licence.",
       ja: "R1の推論をQwen／Llamaの6サイズに蒸留したもの。ローカル配備向け。ホスト版のトークン単価はなく、各チェックポイントはDeepSeekの公開条件と基盤モデルのライセンス双方に従う。",
-      zh: "将 R1 推理蒸馏到 Qwen / Llama 六种尺寸，适合本地部署。无托管 token 单价；各 checkpoint 需同时遵守 DeepSeek 发布许可与对应基础模型许可。",
+      zh: "将 R1 推理蒸馏到 Qwen / Llama 六种尺寸，适合本地部署。无托管词元单价；各 checkpoint 需同时遵守 DeepSeek 发布许可与对应基础模型许可。",
     },
   },
   {
@@ -880,7 +880,7 @@ const KIMI_MODELS: ModelInfo[] = [
     note: {
       en: "Coding-specialised model for agentic software engineering. The English resource pages quote roughly $0.19 / $0.95 / $4 per MTok (cache / input / output), so the effective rate depends on region and channel.",
       ja: "エージェント型ソフトウェア開発向けのコーディング専用モデル。英語版資料では約$0.19/$0.95/$4（キャッシュ/入力/出力、百万トークン）と提示され、地域・チャネルで実効単価が異なる。",
-      zh: "面向 Agent 软件工程的编码专用模型。英文资源页给出约 $0.19 / $0.95 / $4（缓存 / 输入 / 输出，每百万 token），实际单价随地区与渠道不同。",
+      zh: "面向 Agent 软件工程的编码专用模型。英文资源页给出约 $0.19 / $0.95 / $4（缓存 / 输入 / 输出，每百万词元），实际单价随地区与渠道不同。",
     },
   },
   {
@@ -952,7 +952,7 @@ const KIMI_MODELS: ModelInfo[] = [
     note: {
       en: "K2 refresh that widened context to about 256K. The Highspeed variant was quoted at roughly 60–100 tokens/s.",
       ja: "文脈を約256Kに拡張したK2更新版。Highspeed版は約60〜100トークン/秒と提示されていた。",
-      zh: "将上下文扩至约 256K 的 K2 更新版。Highspeed 版曾给出约 60–100 token/s。",
+      zh: "将上下文扩至约 256K 的 K2 更新版。Highspeed 版曾给出约 60–100 词元/秒。",
     },
   },
   {
@@ -969,7 +969,7 @@ const KIMI_MODELS: ModelInfo[] = [
     note: {
       en: "High-speed K2 variant, quoted at about 40 tokens/s against roughly 10 for the base model.",
       ja: "K2の高速版。基本版の約10トークン/秒に対し約40トークン/秒と提示。",
-      zh: "K2 高速版本，官方约 40 token/s，基础版约 10 token/s。",
+      zh: "K2 高速版本，官方约 40 词元/秒，基础版约 10 词元/秒。",
     },
   },
   {

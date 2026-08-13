@@ -129,7 +129,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
   zh: {
     search: "搜索模型…",
     noMatches: "没有匹配的模型",
-    tokensPerCall: "每次调用的 token 数",
+    tokensPerCall: "每次调用的词元数",
     model: "模型",
     tier: "价格档",
     currency: "货币",
@@ -155,11 +155,11 @@ const LABELS: Record<Lang, Record<string, string>> = {
     modalities: "模态",
     latency: "延迟",
     caps: "能力",
-    pricing: "每百万 token 单价",
+    pricing: "每百万词元单价",
     cacheRead: "缓存读取",
     cacheWriteRate: "缓存写入",
     pricedIn: "计价货币",
-    noPrice: "无公开 token 单价",
+    noPrice: "无公开词元单价",
     remove: "移除",
   },
 };
