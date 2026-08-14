@@ -5,10 +5,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* The card's .body adds 10px of right padding as a scrollbar gutter, which this module
-     never uses since it scrolls itself. Left unreclaimed it makes the right margin wider
-     than the left, so the currency select stops short of the card edge. */
-  margin-right: -10px;
 }
 
 .container::-webkit-scrollbar {

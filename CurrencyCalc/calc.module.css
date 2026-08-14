@@ -1,17 +1,13 @@
 .container {
-  /* Card's .body adds 10px right / 12px bottom padding beyond the card's own
-     border padding (right: scrollbar gutter this module never uses since it
-     scrolls itself; bottom: extra breathing room). Reclaim both so the ×
-     buttons/footer sit flush with the card edges, like the header icons.
-     Height is fixed (not auto), so widening it needs an explicit calc()
-     rather than the negative-margin trick that works for the auto-width side. */
+  /* Card's .body keeps 12px of bottom padding clear of the grid resize handle. Reclaim it so the
+     footer sits flush with the card edge, like the header icons. Height is fixed (not auto), so
+     this needs an explicit calc() rather than a negative margin. */
   height: calc(100% + 12px);
   overflow: auto;
   scrollbar-width: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-right: -10px;
 }
 
 .container::-webkit-scrollbar {
