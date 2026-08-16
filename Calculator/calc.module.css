@@ -1,9 +1,6 @@
-/* The Card body keeps 12px of bottom padding clear of the grid resize handle; reclaim it so the
-   calculator centers in the card's visual area, not the padded content box */
 .container {
   position: relative;
-  height: calc(100% + 12px);
-  margin: 0 0 -12px;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
